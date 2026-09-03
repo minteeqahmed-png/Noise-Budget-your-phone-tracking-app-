@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -85,6 +87,10 @@ fun NoiseBudgetScreen(modifier: Modifier = Modifier) {
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 setBackgroundColor(Color.parseColor("#0A0A0B"))
+                // Disable hardware layer to avoid MESA render node driver errors in virtualized environments
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                // Clear any stale or corrupt disk cache
+                clearCache(true)
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
@@ -92,13 +98,18 @@ fun NoiseBudgetScreen(modifier: Modifier = Modifier) {
                     loadWithOverviewMode = true
                     allowFileAccess = true
                     allowContentAccess = true
-                    cacheMode = WebSettings.LOAD_DEFAULT
+                    // Avoid disk cache backend errors for local bundled assets
+                    cacheMode = WebSettings.LOAD_NO_CACHE
                     setSupportZoom(false)
                     builtInZoomControls = false
                     displayZoomControls = false
                 }
                 addJavascriptInterface(HapticInterface(context), "AndroidHaptics")
-                webViewClient = WebViewClient()
+                webViewClient = object : WebViewClient() {
+                    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                        return true
+                    }
+                }
                 webChromeClient = WebChromeClient()
                 loadUrl("file:///android_asset/noisebudget.html")
             }

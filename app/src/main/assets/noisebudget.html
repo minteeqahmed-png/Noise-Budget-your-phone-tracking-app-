@@ -130,100 +130,282 @@
       </div>
     </header>
 
+    <!-- VIEW SWITCHER TABS -->
+    <div class="flex gap-1 mx-6 mt-2 mb-1 bg-white/5 p-1 rounded-lg border border-white/10 shrink-0 z-30">
+      <button id="tab-live" class="flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer">
+        LIVE TELEMETRY
+      </button>
+      <button id="tab-weekly" class="flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer">
+        WEEKLY PATTERN
+      </button>
+    </div>
+
     <!-- MAIN CONTENT AREA -->
     <main class="flex-1 flex flex-col justify-between overflow-hidden relative">
       
       <!-- FILTERED TELEMETRY GROUP (Gains grayscale/dimming in high noise) -->
-      <div id="telemetry-group" class="telemetry-filter flex-1 flex flex-col px-6 pt-2 overflow-y-auto">
+      <div id="telemetry-group" class="telemetry-filter flex-1 flex flex-col px-6 pt-1 overflow-y-auto">
         
-        <!-- BRAINPULSE VISUALIZER -->
-        <div class="w-full h-36 flex items-center justify-center relative shrink-0">
-          <svg id="pulse-svg" class="w-60 h-60 opacity-80" viewBox="0 0 200 200">
-            <!-- Orbital Rings -->
-            <circle id="ring-1" cx="100" cy="100" r="40" fill="none" stroke="rgba(255,107,53,0.3)" stroke-width="1" stroke-dasharray="4 2" />
-            <circle id="ring-2" cx="100" cy="100" r="65" fill="none" stroke="rgba(255,107,53,0.15)" stroke-width="1" stroke-dasharray="10 5" />
-            <circle id="ring-3" cx="100" cy="100" r="90" fill="none" stroke="rgba(255,107,53,0.05)" stroke-width="1" />
+        <!-- LIVE VIEW CONTAINER -->
+        <div id="view-live" class="flex-1 flex flex-col">
+          <!-- BRAINPULSE VISUALIZER -->
+          <div class="w-full h-36 flex items-center justify-center relative shrink-0">
+            <svg id="pulse-svg" class="w-60 h-60 opacity-80" viewBox="0 0 200 200">
+              <!-- Orbital Rings -->
+              <circle id="ring-1" cx="100" cy="100" r="40" fill="none" stroke="rgba(255,107,53,0.3)" stroke-width="1" stroke-dasharray="4 2" />
+              <circle id="ring-2" cx="100" cy="100" r="65" fill="none" stroke="rgba(255,107,53,0.15)" stroke-width="1" stroke-dasharray="10 5" />
+              <circle id="ring-3" cx="100" cy="100" r="90" fill="none" stroke="rgba(255,107,53,0.05)" stroke-width="1" />
+              
+              <!-- Dynamic Connector lines will be injected here -->
+              <g id="pulse-connections"></g>
+
+              <!-- Central Nucleus -->
+              <circle id="nucleus-glow" cx="100" cy="100" r="8" fill="#FF6B35" fill-opacity="0.2" />
+              <circle id="nucleus-core" cx="100" cy="100" r="2.5" fill="#FF6B35" />
+
+              <!-- Dynamic Nodes -->
+              <g id="pulse-nodes"></g>
+            </svg>
+          </div>
+
+          <!-- NOISE SCORE -->
+          <div class="mt-2">
+            <div class="flex items-baseline gap-2">
+              <span id="score-val" class="text-6xl font-light tracking-tighter text-[#FF6B35]">85</span>
+              <span class="text-2xl font-light text-[#7C8188]">/ 100</span>
+            </div>
+            <p class="text-[10px] font-bold tracking-[0.15em] text-[#7C8188] mt-1">COGNITIVE NOISE INDEX</p>
             
-            <!-- Dynamic Connector lines will be injected here -->
-            <g id="pulse-connections"></g>
+            <!-- BUDGET TELEMETRY -->
+            <div class="mt-5 border-t border-white/5 pt-3 flex justify-between">
+              <div>
+                <p class="text-[10px] text-[#7C8188] uppercase tracking-wider mb-1">Budget Reserve</p>
+                <p id="budget-reserve" class="font-mono text-lg text-[#F5F7F8]">12.4%</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[10px] text-[#7C8188] uppercase tracking-wider mb-1">Burn Rate</p>
+                <p id="burn-rate" class="font-mono text-lg text-[#FF3B30]">+4.2 <span class="text-xs">pts/min</span></p>
+              </div>
+            </div>
+          </div>
 
-            <!-- Central Nucleus -->
-            <circle id="nucleus-glow" cx="100" cy="100" r="8" fill="#FF6B35" fill-opacity="0.2" />
-            <circle id="nucleus-core" cx="100" cy="100" r="2.5" fill="#FF6B35" />
+          <!-- ANALYTICS LIST -->
+          <div class="mt-5 border-t border-white/10">
+            <div class="flex justify-between items-center py-2.5 border-b border-white/5">
+              <div class="flex items-center gap-3">
+                <div id="icon-box-1" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 11V7l-5 5 5 5v-4h3a2 2 0 012 2v2H20v-2a2 2 0 012-2h3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold text-[#F5F7F8]">Switching Velocity</p>
+                  <p id="sub-1" class="text-[10px] text-[#7C8188]">High fragmentation</p>
+                </div>
+              </div>
+              <span id="val-1" class="font-mono text-xs text-[#FF6B35]">42 sw/hr</span>
+            </div>
 
-            <!-- Dynamic Nodes -->
-            <g id="pulse-nodes"></g>
-          </svg>
+            <div class="flex justify-between items-center py-2.5 border-b border-white/5">
+              <div class="flex items-center gap-3">
+                <div id="icon-box-2" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 13l5 5 5-5M7 6l5 5 5-5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold text-[#F5F7F8]">Scroll Speed</p>
+                  <p id="sub-2" class="text-[10px] text-[#7C8188]">Chaotic trajectory</p>
+                </div>
+              </div>
+              <span id="val-2" class="font-mono text-xs text-[#FF6B35]">18 sc/min</span>
+            </div>
+
+            <div class="flex justify-between items-center py-2.5 border-b border-white/5">
+              <div class="flex items-center gap-3">
+                <div id="icon-box-3" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF3B30]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4l7 5-3 5 8 6M15 4l5 6-4 4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold text-[#F5F7F8]">Attention Fragmentation</p>
+                  <p id="sub-3" class="text-[10px] text-[#7C8188]">Extreme Red Zone</p>
+                </div>
+              </div>
+              <span id="val-3" class="font-mono text-xs text-[#FF3B30]">Critical</span>
+            </div>
+          </div>
         </div>
 
-        <!-- NOISE SCORE -->
-        <div class="mt-2">
-          <div class="flex items-baseline gap-2">
-            <span id="score-val" class="text-6xl font-light tracking-tighter text-[#FF6B35]">85</span>
-            <span class="text-2xl font-light text-[#7C8188]">/ 100</span>
-          </div>
-          <p class="text-[10px] font-bold tracking-[0.15em] text-[#7C8188] mt-1">COGNITIVE NOISE INDEX</p>
-          
-          <!-- BUDGET TELEMETRY -->
-          <div class="mt-5 border-t border-white/5 pt-3 flex justify-between">
+        <!-- WEEKLY COGNITIVE PATTERN VIEW -->
+        <div id="view-weekly" class="hidden flex-1 flex flex-col gap-3 pb-4">
+          <!-- Summary Metric Strip -->
+          <div class="flex justify-between items-end pb-2.5 border-b border-white/10">
             <div>
-              <p class="text-[10px] text-[#7C8188] uppercase tracking-wider mb-1">Budget Reserve</p>
-              <p id="budget-reserve" class="font-mono text-lg text-[#F5F7F8]">12.4%</p>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-light tracking-tighter text-[#28B8FF]">54.6</span>
+                <span class="text-lg font-light text-[#7C8188]">/ 100</span>
+              </div>
+              <p class="text-[10px] font-bold tracking-[0.15em] text-[#7C8188] mt-1">WEEKLY AVERAGE NOISE</p>
             </div>
             <div class="text-right">
-              <p class="text-[10px] text-[#7C8188] uppercase tracking-wider mb-1">Burn Rate</p>
-              <p id="burn-rate" class="font-mono text-lg text-[#FF3B30]">+4.2 <span class="text-xs">pts/min</span></p>
+              <span class="bg-[#FF6B35]/15 text-[#FF6B35] border border-[#FF6B35]/40 px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wide">
+                2 OVERLOAD DAYS
+              </span>
+              <p class="text-[10px] font-mono text-[#7C8188] mt-1">Threshold: 70.0 pts</p>
+            </div>
+          </div>
+
+          <!-- High-Stress Period Alert Callout -->
+          <div class="bg-[#FF6B35]/10 border border-[#FF6B35]/40 rounded-xl p-3 flex gap-2.5 items-start">
+            <div class="w-5 h-5 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5 mb-0.5">
+                <h3 class="text-[#FF6B35] text-[11px] font-bold tracking-wide uppercase">High-Stress Period Identified</h3>
+                <span class="bg-[#FF3B30] text-white text-[8px] font-mono font-bold px-1 py-0.2 rounded">PEAK</span>
+              </div>
+              <p class="text-white/85 text-[11px] leading-snug">
+                <strong class="text-white">Tue 14:00 – Wed 19:00</strong> exhibited acute task fragmentation. Peak noise reached <strong>84/100</strong> (+14 above threshold).
+              </p>
+            </div>
+          </div>
+
+          <!-- Weekly Line Chart Card -->
+          <div class="bg-[#111214] border border-white/10 rounded-xl p-3 relative">
+            <div class="flex justify-between items-center px-1 mb-1">
+              <span class="text-[9px] font-mono tracking-wider text-[#7C8188] uppercase">DAILY AVERAGE NOISE TRAJECTORY</span>
+              <span class="text-[8px] font-mono text-[#FF6B35]">● OVERLOAD ZONE (&gt;70)</span>
+            </div>
+
+            <!-- SVG Line Chart (330 x 160) -->
+            <svg viewBox="0 0 330 160" class="w-full h-auto overflow-visible">
+              <defs>
+                <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#FF3B30" stop-opacity="0.45" />
+                  <stop offset="45%" stop-color="#FF6B35" stop-opacity="0.25" />
+                  <stop offset="70%" stop-color="#28B8FF" stop-opacity="0.10" />
+                  <stop offset="100%" stop-color="#39FF88" stop-opacity="0.0" />
+                </linearGradient>
+                <linearGradient id="chartStrokeGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#28B8FF" />
+                  <stop offset="25%" stop-color="#FF6B35" />
+                  <stop offset="45%" stop-color="#FF3B30" />
+                  <stop offset="65%" stop-color="#28B8FF" />
+                  <stop offset="100%" stop-color="#39FF88" />
+                </linearGradient>
+              </defs>
+
+              <!-- Reference Horizontal Lines -->
+              <line x1="20" y1="20" x2="310" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+              <text x="15" y="23" text-anchor="end" fill="#7C8188" font-size="7" font-family="'JetBrains Mono', monospace">100</text>
+
+              <line x1="20" y1="49" x2="310" y2="49" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+              <text x="15" y="52" text-anchor="end" fill="#7C8188" font-size="7" font-family="'JetBrains Mono', monospace">75</text>
+
+              <line x1="20" y1="78" x2="310" y2="78" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+              <text x="15" y="81" text-anchor="end" fill="#7C8188" font-size="7" font-family="'JetBrains Mono', monospace">50</text>
+
+              <line x1="20" y1="106" x2="310" y2="106" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+              <text x="15" y="109" text-anchor="end" fill="#7C8188" font-size="7" font-family="'JetBrains Mono', monospace">25</text>
+
+              <line x1="20" y1="135" x2="310" y2="135" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+              <text x="15" y="138" text-anchor="end" fill="#7C8188" font-size="7" font-family="'JetBrains Mono', monospace">0</text>
+
+              <!-- 70% Overload Threshold Dashed Line (y = 54.5) -->
+              <line x1="20" y1="54.5" x2="310" y2="54.5" stroke="#FF6B35" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.8" />
+              <text x="310" y="50" text-anchor="end" fill="#FF6B35" font-size="7.5" font-family="'JetBrains Mono', monospace" font-weight="bold">70 THRESHOLD</text>
+
+              <!-- High Stress Window Shading (Tue to Wed) -->
+              <rect x="56" y="20" width="82" height="115" fill="rgba(255, 59, 48, 0.08)" rx="4" />
+
+              <!-- Area Fill -->
+              <path d="M 28 56.8 L 74 47.6 L 120 38.4 L 166 68.3 L 212 84.4 L 258 105.1 L 304 109.7 L 304 135 L 28 135 Z" fill="url(#chartAreaGrad)" />
+
+              <!-- Stroke Line -->
+              <path d="M 28 56.8 L 74 47.6 L 120 38.4 L 166 68.3 L 212 84.4 L 258 105.1 L 304 109.7" fill="none" stroke="url(#chartStrokeGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+              <!-- Data Nodes -->
+              <!-- MON: 68 (28, 56.8) -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(0)">
+                <circle cx="28" cy="56.8" r="3.5" fill="#28B8FF" stroke="#111214" stroke-width="1.5" />
+                <text x="28" y="48" text-anchor="middle" fill="#F5F7F8" font-size="8" font-family="'JetBrains Mono', monospace">68</text>
+                <text x="28" y="148" text-anchor="middle" fill="#7C8188" font-size="8.5" font-family="'JetBrains Mono', monospace">MON</text>
+              </g>
+
+              <!-- TUE: 76 (74, 47.6) -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(1)">
+                <circle cx="74" cy="47.6" r="4" fill="#FF6B35" stroke="#111214" stroke-width="1.5" />
+                <text x="74" y="39" text-anchor="middle" fill="#FF6B35" font-size="8" font-family="'JetBrains Mono', monospace" font-weight="bold">76</text>
+                <text x="74" y="148" text-anchor="middle" fill="#FF6B35" font-size="8.5" font-family="'JetBrains Mono', monospace" font-weight="bold">TUE</text>
+              </g>
+
+              <!-- WED: 84 (120, 38.4) - PEAK -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(2)">
+                <circle cx="120" cy="38.4" r="8" fill="none" stroke="#FF3B30" stroke-width="1.5" class="pulse-dot" />
+                <circle cx="120" cy="38.4" r="4.5" fill="#FF3B30" stroke="#111214" stroke-width="1.5" />
+                <text x="120" y="28" text-anchor="middle" fill="#FF3B30" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold">84</text>
+                <text x="120" y="148" text-anchor="middle" fill="#FF3B30" font-size="8.5" font-family="'JetBrains Mono', monospace" font-weight="bold">WED</text>
+              </g>
+
+              <!-- THU: 58 (166, 68.3) -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(3)">
+                <circle cx="166" cy="68.3" r="3.5" fill="#28B8FF" stroke="#111214" stroke-width="1.5" />
+                <text x="166" y="60" text-anchor="middle" fill="#F5F7F8" font-size="8" font-family="'JetBrains Mono', monospace">58</text>
+                <text x="166" y="148" text-anchor="middle" fill="#7C8188" font-size="8.5" font-family="'JetBrains Mono', monospace">THU</text>
+              </g>
+
+              <!-- FRI: 44 (212, 84.4) -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(4)">
+                <circle cx="212" cy="84.4" r="3.5" fill="#39FF88" stroke="#111214" stroke-width="1.5" />
+                <text x="212" y="76" text-anchor="middle" fill="#F5F7F8" font-size="8" font-family="'JetBrains Mono', monospace">44</text>
+                <text x="212" y="148" text-anchor="middle" fill="#7C8188" font-size="8.5" font-family="'JetBrains Mono', monospace">FRI</text>
+              </g>
+
+              <!-- SAT: 26 (258, 105.1) -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(5)">
+                <circle cx="258" cy="105.1" r="3.5" fill="#39FF88" stroke="#111214" stroke-width="1.5" />
+                <text x="258" y="97" text-anchor="middle" fill="#F5F7F8" font-size="8" font-family="'JetBrains Mono', monospace">26</text>
+                <text x="258" y="148" text-anchor="middle" fill="#7C8188" font-size="8.5" font-family="'JetBrains Mono', monospace">SAT</text>
+              </g>
+
+              <!-- SUN: 22 (304, 109.7) -->
+              <g class="cursor-pointer" onclick="selectWeeklyDay(6)">
+                <circle cx="304" cy="109.7" r="3.5" fill="#39FF88" stroke="#111214" stroke-width="1.5" />
+                <text x="304" y="101" text-anchor="middle" fill="#F5F7F8" font-size="8" font-family="'JetBrains Mono', monospace">22</text>
+                <text x="304" y="148" text-anchor="middle" fill="#7C8188" font-size="8.5" font-family="'JetBrains Mono', monospace">SUN</text>
+              </g>
+            </svg>
+
+            <!-- Selected Day Detail Ribbon -->
+            <div id="day-inspect-box" class="mt-2 p-2.5 bg-white/5 rounded-lg border border-[#FF6B35]/40 flex justify-between items-center transition-all">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span id="inspect-title" class="text-xs font-bold text-white">Wednesday (Sep 03)</span>
+                  <span id="inspect-status" class="text-[8px] font-mono font-bold text-[#FF3B30] bg-white/10 px-1.5 py-0.5 rounded">CRITICAL</span>
+                </div>
+                <p id="inspect-insight" class="text-[10px] text-[#7C8188] mt-0.5">Peak cognitive overload. Rapid dopamine loops & attention splintering.</p>
+              </div>
+              <div class="text-right">
+                <span id="inspect-score" class="font-mono text-sm font-bold text-[#FF3B30]">84 pts</span>
+                <p id="inspect-meta" class="text-[8px] text-[#7C8188]">Peak: 92 | 51 sw/hr</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Daily Cognitive Load Breakdown -->
+          <div>
+            <h4 class="font-mono text-[9px] tracking-widest text-[#7C8188] uppercase mb-2">DAILY COGNITIVE LOAD BREAKDOWN</h4>
+            <div class="flex flex-col gap-1.5" id="weekly-rows-container">
+              <!-- Rendered via JS -->
             </div>
           </div>
         </div>
 
-        <!-- ANALYTICS LIST -->
-        <div class="mt-5 border-t border-white/10">
-          <div class="flex justify-between items-center py-2.5 border-b border-white/5">
-            <div class="flex items-center gap-3">
-              <div id="icon-box-1" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M7 11V7l-5 5 5 5v-4h3a2 2 0 012 2v2H20v-2a2 2 0 012-2h3" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div>
-                <p class="text-[11px] font-semibold text-[#F5F7F8]">Switching Velocity</p>
-                <p id="sub-1" class="text-[10px] text-[#7C8188]">High fragmentation</p>
-              </div>
-            </div>
-            <span id="val-1" class="font-mono text-xs text-[#FF6B35]">42 sw/hr</span>
-          </div>
-
-          <div class="flex justify-between items-center py-2.5 border-b border-white/5">
-            <div class="flex items-center gap-3">
-              <div id="icon-box-2" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M7 13l5 5 5-5M7 6l5 5 5-5" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div>
-                <p class="text-[11px] font-semibold text-[#F5F7F8]">Scroll Speed</p>
-                <p id="sub-2" class="text-[10px] text-[#7C8188]">Chaotic trajectory</p>
-              </div>
-            </div>
-            <span id="val-2" class="font-mono text-xs text-[#FF6B35]">18 sc/min</span>
-          </div>
-
-          <div class="flex justify-between items-center py-2.5 border-b border-white/5">
-            <div class="flex items-center gap-3">
-              <div id="icon-box-3" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF3B30]">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 4l7 5-3 5 8 6M15 4l5 6-4 4" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-[11px] font-semibold text-[#F5F7F8]">Attention Fragmentation</p>
-                <p id="sub-3" class="text-[10px] text-[#7C8188]">Extreme Red Zone</p>
-              </div>
-            </div>
-            <span id="val-3" class="font-mono text-xs text-[#FF3B30]">Critical</span>
-          </div>
-        </div>
       </div>
 
       <!-- INTERVENTION CARD (ACTIVE OVERLAY - OUTSIDE FILTERED TELEMETRY) -->
@@ -638,6 +820,112 @@
       document.getElementById('dot-shield').className = focusShieldActive ? "w-2 h-2 rounded-full bg-[#39FF88]" : "w-2 h-2 rounded-full bg-[#FF6B35]";
       document.getElementById('text-shield').textContent = `FOCUS SHIELD: ${focusShieldActive ? "ON" : "OFF"}`;
     });
+
+    // WEEKLY PATTERN LOGIC
+    const WEEKLY_DATA = [
+      { day: "Mon", date: "Sep 01", avg: 68, peak: 79, switches: 38, status: "ELEVATED", insight: "High context switching before end-of-day deadline sync." },
+      { day: "Tue", date: "Sep 02", avg: 76, peak: 88, switches: 45, status: "OVERLOAD", insight: "Intervention triggered twice. High notification chatter." },
+      { day: "Wed", date: "Sep 03", avg: 84, peak: 92, switches: 51, status: "CRITICAL", insight: "Peak cognitive overload. Rapid dopamine loops & attention splintering." },
+      { day: "Thu", date: "Sep 04", avg: 58, peak: 71, switches: 28, status: "MODERATE", insight: "Steady focus recovery post-intervention reset protocol." },
+      { day: "Fri", date: "Sep 05", avg: 44, peak: 60, switches: 19, status: "CONTROLLED", insight: "Consistent deep work blocks with minimal task bouncing." },
+      { day: "Sat", date: "Sep 06", avg: 26, peak: 39, switches: 8, status: "OPTIMAL", insight: "Low digital noise footprint. Brain recovery in progress." },
+      { day: "Sun", date: "Sep 07", avg: 22, peak: 31, switches: 5, status: "OPTIMAL", insight: "Baseline cognitive calm. System primed for new work cycle." }
+    ];
+
+    let currentSelectedDay = 2; // Wednesday default
+
+    function renderWeeklyRows() {
+      const container = document.getElementById('weekly-rows-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      WEEKLY_DATA.forEach((item, idx) => {
+        const isSelected = idx === currentSelectedDay;
+        const isOverload = item.avg >= 70;
+        const isModerate = item.avg >= 50 && item.avg < 70;
+        const color = isOverload ? '#FF3B30' : isModerate ? '#28B8FF' : '#39FF88';
+
+        const row = document.createElement('div');
+        row.className = `flex justify-between items-center py-2 px-2.5 rounded-lg border transition-all cursor-pointer ${
+          isSelected 
+            ? 'bg-white/10 border-white/20' 
+            : 'bg-white/[0.02] border-white/5 hover:bg-white/5'
+        }`;
+        row.onclick = () => selectWeeklyDay(idx);
+
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="font-mono text-xs font-bold w-7" style="color: ${color}">${item.day}</span>
+            <div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width: ${item.avg}%; background-color: ${color}"></div>
+            </div>
+            <span class="text-[10px] text-[#7C8188]">${item.date}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded" style="color: ${color}; background-color: ${color}15">
+              ${item.status}
+            </span>
+            <span class="font-mono text-xs font-bold w-12 text-right" style="color: ${color}">
+              ${item.avg} <span class="text-[9px] font-normal text-[#7C8188]">avg</span>
+            </span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function selectWeeklyDay(idx) {
+      currentSelectedDay = idx;
+      const item = WEEKLY_DATA[idx];
+      const isOverload = item.avg >= 70;
+      const isModerate = item.avg >= 50 && item.avg < 70;
+      const color = isOverload ? '#FF3B30' : isModerate ? '#28B8FF' : '#39FF88';
+
+      const titleEl = document.getElementById('inspect-title');
+      const statusEl = document.getElementById('inspect-status');
+      const insightEl = document.getElementById('inspect-insight');
+      const scoreEl = document.getElementById('inspect-score');
+      const metaEl = document.getElementById('inspect-meta');
+      const boxEl = document.getElementById('day-inspect-box');
+
+      if (titleEl) titleEl.textContent = `${item.day === 'Wed' ? 'Wednesday' : item.day === 'Tue' ? 'Tuesday' : item.day === 'Mon' ? 'Monday' : item.day === 'Thu' ? 'Thursday' : item.day === 'Fri' ? 'Friday' : item.day === 'Sat' ? 'Saturday' : 'Sunday'} (${item.date})`;
+      if (statusEl) {
+        statusEl.textContent = item.status;
+        statusEl.style.color = color;
+      }
+      if (insightEl) insightEl.textContent = item.insight;
+      if (scoreEl) {
+        scoreEl.textContent = `${item.avg} pts`;
+        scoreEl.style.color = color;
+      }
+      if (metaEl) metaEl.textContent = `Peak: ${item.peak} | ${item.switches} sw/hr`;
+      if (boxEl) boxEl.style.borderColor = `${color}60`;
+
+      renderWeeklyRows();
+    }
+
+    // Tab Switching
+    const tabLive = document.getElementById('tab-live');
+    const tabWeekly = document.getElementById('tab-weekly');
+    const viewLive = document.getElementById('view-live');
+    const viewWeekly = document.getElementById('view-weekly');
+
+    tabLive.addEventListener('click', () => {
+      viewLive.classList.remove('hidden');
+      viewWeekly.classList.add('hidden');
+      tabLive.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer";
+      tabWeekly.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer";
+    });
+
+    tabWeekly.addEventListener('click', () => {
+      viewLive.classList.add('hidden');
+      viewWeekly.classList.remove('hidden');
+      tabWeekly.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer";
+      tabLive.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer";
+      renderWeeklyRows();
+    });
+
+    renderWeeklyRows();
 
     // Initial state
     setNoise(85);

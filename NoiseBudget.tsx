@@ -884,6 +884,635 @@ export const InterventionCard: React.FC<{
 };
 
 // ----------------------------------------------------------------------------
+// 7. <WeeklyCognitivePattern />: Weekly Cognitive Pattern & High-Stress Period Analysis
+// ----------------------------------------------------------------------------
+export interface DailyNoiseRecord {
+  day: string;
+  dayShort: string;
+  date: string;
+  avgNoise: number;
+  peakNoise: number;
+  switchesPerHour: number;
+  status: "CALM" | "MODERATE" | "HIGH STRESS" | "CRITICAL";
+  statusColor: string;
+  timeWindow?: string;
+  insight: string;
+}
+
+export const WEEKLY_DATA: DailyNoiseRecord[] = [
+  {
+    day: "Monday",
+    dayShort: "MON",
+    date: "Sep 01",
+    avgNoise: 68,
+    peakNoise: 72,
+    switchesPerHour: 34,
+    status: "MODERATE",
+    statusColor: "#28B8FF",
+    insight: "Morning backlog clearing with elevated context shifting.",
+  },
+  {
+    day: "Tuesday",
+    dayShort: "TUE",
+    date: "Sep 02",
+    avgNoise: 76,
+    peakNoise: 88,
+    switchesPerHour: 44,
+    status: "HIGH STRESS",
+    statusColor: "#FF6B35",
+    timeWindow: "14:00 – 17:30",
+    insight: "Multi-channel fragmentation spike. 6 consecutive sprint syncs.",
+  },
+  {
+    day: "Wednesday",
+    dayShort: "WED",
+    date: "Sep 03",
+    avgNoise: 84,
+    peakNoise: 92,
+    switchesPerHour: 51,
+    status: "CRITICAL",
+    statusColor: "#FF3B30",
+    timeWindow: "13:30 – 19:00",
+    insight: "Peak cognitive overload. Rapid dopamine loops & attention splintering.",
+  },
+  {
+    day: "Thursday",
+    dayShort: "THU",
+    date: "Sep 04",
+    avgNoise: 58,
+    peakNoise: 66,
+    switchesPerHour: 22,
+    status: "MODERATE",
+    statusColor: "#28B8FF",
+    insight: "Post-intervention recovery. Focus shield engaged 3.2 hrs.",
+  },
+  {
+    day: "Friday",
+    dayShort: "FRI",
+    date: "Sep 05",
+    avgNoise: 44,
+    peakNoise: 52,
+    switchesPerHour: 14,
+    status: "CALM",
+    statusColor: "#39FF88",
+    insight: "Declining cognitive friction. Sustained single-task focus flow.",
+  },
+  {
+    day: "Saturday",
+    dayShort: "SAT",
+    date: "Sep 06",
+    avgNoise: 26,
+    peakNoise: 34,
+    switchesPerHour: 6,
+    status: "CALM",
+    statusColor: "#39FF88",
+    insight: "Digital detachment. Offline restorative activities.",
+  },
+  {
+    day: "Sunday",
+    dayShort: "SUN",
+    date: "Sep 07",
+    avgNoise: 22,
+    peakNoise: 28,
+    switchesPerHour: 4,
+    status: "CALM",
+    statusColor: "#39FF88",
+    insight: "Optimal baseline. Cognitive budget fully replenished.",
+  },
+];
+
+export const WeeklyCognitivePattern: React.FC = () => {
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(2); // Default to Wednesday peak
+  const selectedDay = WEEKLY_DATA[selectedDayIndex];
+
+  // SVG Chart Geometry
+  // 7 points across 330px width (x from 28 to 304, spacing = 46)
+  const chartWidth = 330;
+  const chartHeight = 160;
+  const paddingLeft = 28;
+  const xStep = 46;
+  const yBottom = 135;
+  const yRange = 115; // 0-100 maps to yBottom to yBottom - yRange (20)
+
+  const getY = (val: number) => yBottom - (val / 100) * yRange;
+  const getX = (idx: number) => paddingLeft + idx * xStep;
+
+  // Path generator for line chart
+  const points = WEEKLY_DATA.map((d, i) => ({ x: getX(i), y: getY(d.avgNoise) }));
+  const pathD = points.reduce((acc, pt, i) => {
+    return i === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
+  }, "");
+
+  // Area under curve path
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${yBottom} L ${points[0].x} ${yBottom} Z`;
+
+  // 70 Threshold Y coordinate
+  const thresholdY = getY(70);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Weekly Metric Summary Strip */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          paddingBottom: 10,
+          borderBottom: `1px solid ${TOKENS.borderSubtle}`,
+        }}
+      >
+        <div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 42,
+                fontWeight: 300,
+                letterSpacing: "-0.05em",
+                color: "#28B8FF",
+                lineHeight: 1,
+              }}
+            >
+              54.6
+            </span>
+            <span style={{ fontSize: 18, color: TOKENS.textMuted, fontWeight: 300 }}>/ 100</span>
+          </div>
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              color: TOKENS.textMuted,
+              marginTop: 4,
+              margin: 0,
+            }}
+          >
+            WEEKLY AVERAGE NOISE
+          </p>
+        </div>
+
+        <div style={{ textAlign: "right" }}>
+          <span
+            style={{
+              display: "inline-block",
+              backgroundColor: "rgba(255, 107, 53, 0.15)",
+              color: "#FF6B35",
+              border: "1px solid rgba(255, 107, 53, 0.40)",
+              padding: "3px 8px",
+              borderRadius: 4,
+              fontSize: 9,
+              fontFamily: "'JetBrains Mono', monospace",
+              fontWeight: 700,
+              letterSpacing: "0.05em",
+            }}
+          >
+            2 OVERLOAD DAYS
+          </span>
+          <p
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10,
+              color: TOKENS.textMuted,
+              marginTop: 4,
+              margin: 0,
+            }}
+          >
+            Threshold: 70.0 pts
+          </p>
+        </div>
+      </div>
+
+      {/* High-Stress Period Alert Callout */}
+      <div
+        style={{
+          backgroundColor: "rgba(255, 107, 53, 0.08)",
+          border: "1px solid rgba(255, 107, 53, 0.35)",
+          borderRadius: 10,
+          padding: "10px 14px",
+          display: "flex",
+          gap: 10,
+          alignItems: "flex-start",
+        }}
+      >
+        <div
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: "50%",
+            backgroundColor: "rgba(255, 107, 53, 0.20)",
+            color: "#FF6B35",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            marginTop: 1,
+          }}
+        >
+          <svg style={{ width: 13, height: 13 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <h3
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#FF6B35",
+                margin: 0,
+              }}
+            >
+              High-Stress Period Identified
+            </h3>
+            <span
+              style={{
+                backgroundColor: "#FF3B30",
+                color: "#FFFFFF",
+                fontSize: 8,
+                padding: "1px 4px",
+                borderRadius: 2,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 700,
+              }}
+            >
+              PEAK
+            </span>
+          </div>
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 11,
+              color: "rgba(245, 247, 248, 0.85)",
+              lineHeight: 1.35,
+              margin: 0,
+            }}
+          >
+            <strong style={{ color: "#F5F7F8" }}>Tue 14:00 – Wed 19:00</strong> exhibited acute task fragmentation. Peak noise reached <strong>84/100</strong> (+14 above threshold).
+          </p>
+        </div>
+      </div>
+
+      {/* Interactive Line Chart Canvas */}
+      <div
+        style={{
+          backgroundColor: "#111214",
+          border: `1px solid ${TOKENS.border}`,
+          borderRadius: 12,
+          padding: "12px 8px 8px 8px",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingLeft: 8,
+            paddingRight: 8,
+            marginBottom: 6,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 9,
+              letterSpacing: "0.08em",
+              color: TOKENS.textMuted,
+              textTransform: "uppercase",
+            }}
+          >
+            DAILY AVERAGE NOISE TRAJECTORY
+          </span>
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 8,
+              color: "#FF6B35",
+            }}
+          >
+            ● OVERLOAD ZONE (&gt;70)
+          </span>
+        </div>
+
+        <svg
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+          style={{ width: "100%", height: "auto", overflow: "visible" }}
+        >
+          <defs>
+            <linearGradient id="weeklyAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FF3B30" stopOpacity="0.40" />
+              <stop offset="45%" stopColor="#FF6B35" stopOpacity="0.25" />
+              <stop offset="70%" stopColor="#28B8FF" stopOpacity="0.10" />
+              <stop offset="100%" stopColor="#39FF88" stopOpacity="0.0" />
+            </linearGradient>
+            <linearGradient id="lineStrokeGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#28B8FF" />
+              <stop offset="25%" stopColor="#FF6B35" />
+              <stop offset="45%" stopColor="#FF3B30" />
+              <stop offset="65%" stopColor="#28B8FF" />
+              <stop offset="100%" stopColor="#39FF88" />
+            </linearGradient>
+          </defs>
+
+          {/* Background Grid Lines & Y-axis Labels */}
+          {[100, 75, 50, 25, 0].map((gridVal) => {
+            const y = getY(gridVal);
+            return (
+              <g key={`grid-${gridVal}`}>
+                <line
+                  x1={20}
+                  y1={y}
+                  x2={310}
+                  y2={y}
+                  stroke="rgba(255, 255, 255, 0.05)"
+                  strokeWidth="1"
+                />
+                <text
+                  x={15}
+                  y={y + 3}
+                  textAnchor="end"
+                  fill="#7C8188"
+                  fontSize="7"
+                  fontFamily="'JetBrains Mono', monospace"
+                >
+                  {gridVal}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* 70% Overload Threshold Dashed Line */}
+          <line
+            x1={20}
+            y1={thresholdY}
+            x2={310}
+            y2={thresholdY}
+            stroke="#FF6B35"
+            strokeWidth="1.2"
+            strokeDasharray="4 3"
+            strokeOpacity="0.75"
+          />
+          <text
+            x={310}
+            y={thresholdY - 4}
+            textAnchor="end"
+            fill="#FF6B35"
+            fontSize="7.5"
+            fontFamily="'JetBrains Mono', monospace"
+            fontWeight="bold"
+          >
+            70 THRESHOLD
+          </text>
+
+          {/* High-Stress Zone Shading (Tue to Wed) */}
+          <rect
+            x={getX(1) - 18}
+            y={getY(100)}
+            width={xStep + 36}
+            height={yBottom - getY(100)}
+            fill="rgba(255, 59, 48, 0.07)"
+            rx="4"
+          />
+
+          {/* Area under curve */}
+          <path d={areaD} fill="url(#weeklyAreaGradient)" />
+
+          {/* Multi-point Stroke Path */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="url(#lineStrokeGradient)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Data Nodes for each day */}
+          {WEEKLY_DATA.map((d, i) => {
+            const x = getX(i);
+            const y = getY(d.avgNoise);
+            const isSelected = selectedDayIndex === i;
+            const isOverload = d.avgNoise >= 70;
+
+            return (
+              <g
+                key={`point-${d.dayShort}`}
+                onClick={() => setSelectedDayIndex(i)}
+                style={{ cursor: "pointer" }}
+              >
+                {/* Active/Peak Pulsing Ring */}
+                {(isSelected || d.avgNoise === 84) && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={isSelected ? 9 : 7}
+                    fill="none"
+                    stroke={d.statusColor}
+                    strokeWidth="1.5"
+                    strokeOpacity={isSelected ? 0.9 : 0.6}
+                    className="pulse-dot"
+                  />
+                )}
+
+                {/* Node Core */}
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={isSelected ? 4.5 : isOverload ? 3.5 : 3}
+                  fill={d.statusColor}
+                  stroke="#111214"
+                  strokeWidth="1.5"
+                />
+
+                {/* Value Label above node */}
+                <text
+                  x={x}
+                  y={y - 8}
+                  textAnchor="middle"
+                  fill={isOverload ? d.statusColor : "#F5F7F8"}
+                  fontSize={isSelected ? "9" : "8"}
+                  fontFamily="'JetBrains Mono', monospace"
+                  fontWeight={isSelected || isOverload ? "bold" : "normal"}
+                >
+                  {d.avgNoise}
+                </text>
+
+                {/* X-axis Day Label */}
+                <text
+                  x={x}
+                  y={yBottom + 14}
+                  textAnchor="middle"
+                  fill={isSelected ? TOKENS.textPrimary : isOverload ? "#FF6B35" : TOKENS.textMuted}
+                  fontSize="8.5"
+                  fontFamily="'JetBrains Mono', monospace"
+                  fontWeight={isSelected || isOverload ? "bold" : "500"}
+                >
+                  {d.dayShort}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Selected Day Inspect Ribbon */}
+        <div
+          style={{
+            marginTop: 8,
+            padding: "8px 12px",
+            backgroundColor: "rgba(255, 255, 255, 0.03)",
+            borderRadius: 8,
+            border: `1px solid ${selectedDay.avgNoise >= 70 ? "rgba(255, 107, 53, 0.3)" : "rgba(255, 255, 255, 0.06)"}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: TOKENS.textPrimary }}>
+                {selectedDay.day} ({selectedDay.date})
+              </span>
+              <span
+                style={{
+                  fontSize: 8,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: 700,
+                  color: selectedDay.statusColor,
+                  backgroundColor: "rgba(255, 255, 255, 0.06)",
+                  padding: "1px 5px",
+                  borderRadius: 3,
+                }}
+              >
+                {selectedDay.status}
+              </span>
+            </div>
+            <p style={{ fontSize: 10, color: TOKENS.textMuted, margin: "2px 0 0 0" }}>
+              {selectedDay.insight}
+            </p>
+          </div>
+
+          <div style={{ textAlign: "right" }}>
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 14,
+                fontWeight: 700,
+                color: selectedDay.statusColor,
+              }}
+            >
+              {selectedDay.avgNoise} pts
+            </span>
+            <p style={{ fontSize: 8, color: TOKENS.textMuted, margin: "1px 0 0 0" }}>
+              Peak: {selectedDay.peakNoise} | {selectedDay.switchesPerHour} sw/hr
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Breakdown List */}
+      <div>
+        <h4
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 9,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: TOKENS.textMuted,
+            marginBottom: 8,
+            margin: "0 0 8px 2px",
+          }}
+        >
+          DAILY COGNITIVE LOAD BREAKDOWN
+        </h4>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {WEEKLY_DATA.map((item, idx) => {
+            const isPeak = item.avgNoise >= 70;
+            const isSelected = selectedDayIndex === idx;
+
+            return (
+              <div
+                key={`row-${item.day}`}
+                onClick={() => setSelectedDayIndex(idx)}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 12px",
+                  backgroundColor: isSelected
+                    ? "rgba(255, 255, 255, 0.07)"
+                    : "rgba(255, 255, 255, 0.02)",
+                  border: isSelected
+                    ? `1px solid ${item.statusColor}`
+                    : `1px solid ${TOKENS.borderSubtle}`,
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: isPeak ? item.statusColor : TOKENS.textPrimary,
+                      width: 32,
+                    }}
+                  >
+                    {item.dayShort}
+                  </span>
+                  <div>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: TOKENS.textPrimary }}>
+                      {item.day}
+                    </span>
+                    <span style={{ fontSize: 9, color: TOKENS.textMuted, marginLeft: 6 }}>
+                      {item.date}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span
+                    style={{
+                      fontSize: 8,
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontWeight: 700,
+                      color: item.statusColor,
+                      backgroundColor: "rgba(255, 255, 255, 0.04)",
+                      padding: "2px 5px",
+                      borderRadius: 3,
+                    }}
+                  >
+                    {item.status}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: item.statusColor,
+                      width: 28,
+                      textAlign: "right",
+                    }}
+                  >
+                    {item.avgNoise}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ----------------------------------------------------------------------------
 // 8. <ControlsBar />: Professional Polish Simulation Toolbar
 // ----------------------------------------------------------------------------
 export const ControlsBar: React.FC<{
@@ -1111,6 +1740,7 @@ export const GestureIndicator: React.FC = () => {
 // MAIN COMPONENT: NoiseBudgetApp
 // ============================================================================
 export default function NoiseBudgetApp() {
+  const [activeView, setActiveView] = useState<"live" | "weekly">("live");
   const [noiseLevel, setNoiseLevel] = useState<number>(85);
   const [focusShield, setFocusShield] = useState<boolean>(true);
   const [mutedOverride, setMutedOverride] = useState<boolean>(false);
@@ -1304,15 +1934,76 @@ export default function NoiseBudgetApp() {
               paddingLeft: 24,
               paddingRight: 24,
               paddingTop: 16,
+              overflowY: "auto",
               filter: isScreenMuted ? "grayscale(100%) brightness(0.5) contrast(75%)" : "none",
               WebkitFilter: isScreenMuted ? "grayscale(100%) brightness(0.5) contrast(75%)" : "none",
               transition: "filter 0.5s ease",
             }}
           >
             <Header />
-            <BrainPulse noiseLevel={noiseLevel} />
-            <NoiseScore score={noiseLevel} />
-            <AnalyticsList data={metricsData} />
+
+            {/* View Switcher: Live Telemetry vs Weekly Cognitive Pattern */}
+            <div
+              style={{
+                display: "flex",
+                gap: 4,
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                padding: 3,
+                borderRadius: 8,
+                border: `1px solid ${TOKENS.borderSubtle}`,
+                marginTop: 8,
+                marginBottom: 12,
+              }}
+            >
+              <button
+                onClick={() => setActiveView("live")}
+                style={{
+                  flex: 1,
+                  padding: "6px 10px",
+                  fontSize: 10,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  borderRadius: 6,
+                  border: "none",
+                  backgroundColor: activeView === "live" ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                  color: activeView === "live" ? TOKENS.textPrimary : TOKENS.textMuted,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                LIVE TELEMETRY
+              </button>
+              <button
+                onClick={() => setActiveView("weekly")}
+                style={{
+                  flex: 1,
+                  padding: "6px 10px",
+                  fontSize: 10,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  borderRadius: 6,
+                  border: "none",
+                  backgroundColor: activeView === "weekly" ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                  color: activeView === "weekly" ? TOKENS.textPrimary : TOKENS.textMuted,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                WEEKLY PATTERN
+              </button>
+            </div>
+
+            {activeView === "live" ? (
+              <>
+                <BrainPulse noiseLevel={noiseLevel} />
+                <NoiseScore score={noiseLevel} />
+                <AnalyticsList data={metricsData} />
+              </>
+            ) : (
+              <WeeklyCognitivePattern />
+            )}
           </div>
 
           {/* INTERVENTION CARD (ACTIVE OVERLAY - OUTSIDE FILTER) */}
