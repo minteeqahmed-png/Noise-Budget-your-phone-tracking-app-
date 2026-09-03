@@ -28,6 +28,29 @@ export interface MetricItem {
 }
 
 // ----------------------------------------------------------------------------
+// Vibration Feedback Protocol (Subtle Double-Pulse Threshold Alert)
+// ----------------------------------------------------------------------------
+export const triggerPhysicalVibrationProtocol = () => {
+  // 1. Android Native Haptics Bridge (45ms pulse, 60ms pause, 45ms pulse)
+  try {
+    if (typeof window !== "undefined" && (window as any).AndroidHaptics?.triggerOverloadHaptic) {
+      (window as any).AndroidHaptics.triggerOverloadHaptic();
+    }
+  } catch (err) {
+    console.warn("AndroidHaptics error:", err);
+  }
+
+  // 2. Standard Web Vibration API Fallback
+  try {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([45, 60, 45]);
+    }
+  } catch (err) {
+    console.warn("Navigator vibrate error:", err);
+  }
+};
+
+// ----------------------------------------------------------------------------
 // 1. <StatusBar />: Native Android Status Bar (Professional Polish)
 // ----------------------------------------------------------------------------
 export const StatusBar: React.FC = () => {
@@ -778,12 +801,32 @@ export const InterventionCard: React.FC<{
             fontSize: 13,
             color: "rgba(0, 0, 0, 0.80)",
             lineHeight: 1.35,
-            marginBottom: 14,
+            marginBottom: 10,
             margin: 0,
           }}
         >
           Screen muted to break fragmentation. Physical feedback intervention active.
         </p>
+
+        {/* Tactile Feedback Status Badge */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            backgroundColor: "rgba(0, 0, 0, 0.15)",
+            padding: "3px 8px",
+            borderRadius: 4,
+            marginBottom: 10,
+          }}
+        >
+          <svg style={{ width: 12, height: 12, color: "#000000" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2v20M17 5a9 9 0 010 14M7 5a9 9 0 000 14M21 8a13 13 0 010 8M3 8a13 13 0 000 8" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, color: "#000000", letterSpacing: "0.05em" }}>
+            PHYSICAL FEEDBACK: TACTILE DOUBLE-PULSE FIRED
+          </span>
+        </div>
 
         {isCounting && (
           <div
@@ -1071,6 +1114,19 @@ export default function NoiseBudgetApp() {
   const [noiseLevel, setNoiseLevel] = useState<number>(85);
   const [focusShield, setFocusShield] = useState<boolean>(true);
   const [mutedOverride, setMutedOverride] = useState<boolean>(false);
+  const [isHapticRumbling, setIsHapticRumbling] = useState<boolean>(false);
+  const prevNoiseRef = useRef<number>(85);
+
+  // Vibration feedback protocol: triggers when cognitive load crosses the 70% threshold
+  useEffect(() => {
+    if (prevNoiseRef.current < 70 && noiseLevel >= 70) {
+      triggerPhysicalVibrationProtocol();
+      setIsHapticRumbling(true);
+      const timer = setTimeout(() => setIsHapticRumbling(false), 450);
+      return () => clearTimeout(timer);
+    }
+    prevNoiseRef.current = noiseLevel;
+  }, [noiseLevel]);
 
   const metricsData = useMemo<MetricItem[]>(() => {
     if (noiseLevel >= 70) {
@@ -1194,10 +1250,23 @@ export default function NoiseBudgetApp() {
           75% { transform: translate(1px,1px); }
           100% { transform: translate(0,0); }
         }
+        @keyframes hapticRumble {
+          0% { transform: translate(0, 0); }
+          15% { transform: translate(-2px, 1.5px); }
+          30% { transform: translate(2px, -1.5px); }
+          45% { transform: translate(-1.5px, -1px); }
+          60% { transform: translate(1.5px, 1px); }
+          75% { transform: translate(-1px, 0.5px); }
+          100% { transform: translate(0, 0); }
+        }
+        .haptic-rumble {
+          animation: hapticRumble 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
       `}</style>
 
       {/* Emulated Android Chassis (390px x 844px) */}
       <div
+        className={isHapticRumbling ? "haptic-rumble" : undefined}
         style={{
           width: "100%",
           maxWidth: 390,

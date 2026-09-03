@@ -1,9 +1,15 @@
 package com.example
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -36,6 +42,38 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+class HapticInterface(private val context: Context) {
+    @JavascriptInterface
+    fun triggerOverloadHaptic() {
+        try {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                vibratorManager?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+
+            vibrator?.let { v ->
+                if (v.hasVibrator()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        // Subtle double-pulse tactile alert: 45ms pulse, 60ms break, 45ms pulse
+                        val timings = longArrayOf(0, 45, 60, 45)
+                        val amplitudes = intArrayOf(0, 180, 0, 220)
+                        val effect = VibrationEffect.createWaveform(timings, amplitudes, -1)
+                        v.vibrate(effect)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        v.vibrate(longArrayOf(0, 45, 60, 45), -1)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun NoiseBudgetScreen(modifier: Modifier = Modifier) {
@@ -59,6 +97,7 @@ fun NoiseBudgetScreen(modifier: Modifier = Modifier) {
                     builtInZoomControls = false
                     displayZoomControls = false
                 }
+                addJavascriptInterface(HapticInterface(context), "AndroidHaptics")
                 webViewClient = WebViewClient()
                 webChromeClient = WebChromeClient()
                 loadUrl("file:///android_asset/noisebudget.html")
