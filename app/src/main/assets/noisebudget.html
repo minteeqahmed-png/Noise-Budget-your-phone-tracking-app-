@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; margin: 0;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NOISEBUDGET — Cognitive Load Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    :root {
+      --bg-substrate: #0A0A0B;
+      --surface: #111214;
+      --accent-high: #FF6B35;
+      --accent-critical: #FF3B30;
+      --accent-mid: #28B8FF;
+      --accent-low: #39FF88;
+      --text-primary: #F5F7F8;
+      --text-muted: #7C8188;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-default: rgba(255, 255, 255, 0.10);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #0A0A0B;
+      color: #F5F7F8;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+    .pulse-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.9); }
+    }
+    .jitter {
+      animation: jitter 0.2s infinite;
+    }
+    @keyframes jitter {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(1px, -1px); }
+      50% { transform: translate(-1px, 1px); }
+      75% { transform: translate(1px, 1px); }
+      100% { transform: translate(0, 0); }
+    }
+    /* Fallback utility classes for resilience */
+    .h-full { height: 100%; }
+    .w-full { width: 100%; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .flex-1 { flex: 1 1 0%; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .overflow-hidden { overflow: hidden; }
+    .shrink-0 { flex-shrink: 0; }
+    .rounded-full { border-radius: 9999px; }
+    .rounded-md { border-radius: 6px; }
+    .rounded-xl { border-radius: 12px; }
+
+    /* Telemetry filter transition */
+    .telemetry-filter {
+      transition: filter 0.4s ease, -webkit-filter 0.4s ease;
+    }
+    .telemetry-muted {
+      filter: grayscale(100%) brightness(0.5) contrast(75%);
+      -webkit-filter: grayscale(100%) brightness(0.5) contrast(75%);
+    }
+  </style>
+</head>
+<body class="bg-[#0A0A0B] text-[#F5F7F8]">
+  <div id="app-root" class="flex flex-col h-full w-full bg-[#0A0A0B] text-[#F5F7F8] overflow-hidden relative selection:bg-[#28B8FF]/30">
+
+    <!-- STATUS BAR (ANDROID NATIVE) -->
+    <div class="flex justify-between items-center px-5 h-10 w-full z-50 shrink-0">
+      <div id="status-time" class="text-sm font-medium text-[#F5F7F8]">10:24</div>
+      <div class="w-3.5 h-3.5 bg-black rounded-full border border-white/10 flex items-center justify-center">
+        <div class="w-1 h-1 bg-white/5 rounded-full"></div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="text-[10px] font-bold tracking-tighter text-[#F5F7F8]">5G</span>
+        <svg class="w-4 h-4 text-[#F5F7F8]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21l-12-18h24z"/></svg>
+        <div class="flex items-center gap-0.5">
+          <span class="text-[10px] text-[#F5F7F8]">78%</span>
+          <div class="w-2.5 h-4 border border-white/40 rounded-[1px] relative p-[1px]">
+            <div class="bg-white h-full w-full rounded-[0.5px]"></div>
+            <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-0.5 bg-white/40"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP HEADER -->
+    <header class="flex justify-between items-center px-6 py-3 border-b border-white/10 shrink-0">
+      <div class="flex items-baseline gap-2">
+        <h1 class="text-sm font-bold tracking-[0.2em] text-[#F5F7F8]">NOISEBUDGET</h1>
+        <span class="text-[9px] font-mono text-[#7C8188]">v2.4</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-[#39FF88] pulse-dot"></div>
+        <span class="text-[10px] font-mono tracking-wider text-[#39FF88]">SYSTEM MONITORING</span>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col justify-between overflow-hidden relative">
+      
+      <!-- FILTERED TELEMETRY GROUP (Gains grayscale/dimming in high noise) -->
+      <div id="telemetry-group" class="telemetry-filter flex-1 flex flex-col px-6 pt-2 overflow-y-auto">
+        
+        <!-- BRAINPULSE VISUALIZER -->
+        <div class="w-full h-36 flex items-center justify-center relative shrink-0">
+          <svg id="pulse-svg" class="w-60 h-60 opacity-80" viewBox="0 0 200 200">
+            <!-- Orbital Rings -->
+            <circle id="ring-1" cx="100" cy="100" r="40" fill="none" stroke="rgba(255,107,53,0.3)" stroke-width="1" stroke-dasharray="4 2" />
+            <circle id="ring-2" cx="100" cy="100" r="65" fill="none" stroke="rgba(255,107,53,0.15)" stroke-width="1" stroke-dasharray="10 5" />
+            <circle id="ring-3" cx="100" cy="100" r="90" fill="none" stroke="rgba(255,107,53,0.05)" stroke-width="1" />
+            
+            <!-- Dynamic Connector lines will be injected here -->
+            <g id="pulse-connections"></g>
+
+            <!-- Central Nucleus -->
+            <circle id="nucleus-glow" cx="100" cy="100" r="8" fill="#FF6B35" fill-opacity="0.2" />
+            <circle id="nucleus-core" cx="100" cy="100" r="2.5" fill="#FF6B35" />
+
+            <!-- Dynamic Nodes -->
+            <g id="pulse-nodes"></g>
+          </svg>
+        </div>
+
+        <!-- NOISE SCORE -->
+        <div class="mt-2">
+          <div class="flex items-baseline gap-2">
+            <span id="score-val" class="text-6xl font-light tracking-tighter text-[#FF6B35]">85</span>
+            <span class="text-2xl font-light text-[#7C8188]">/ 100</span>
+          </div>
+          <p class="text-[10px] font-bold tracking-[0.15em] text-[#7C8188] mt-1">COGNITIVE NOISE INDEX</p>
+          
+          <!-- BUDGET TELEMETRY -->
+          <div class="mt-5 border-t border-white/5 pt-3 flex justify-between">
+            <div>
+              <p class="text-[10px] text-[#7C8188] uppercase tracking-wider mb-1">Budget Reserve</p>
+              <p id="budget-reserve" class="font-mono text-lg text-[#F5F7F8]">12.4%</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] text-[#7C8188] uppercase tracking-wider mb-1">Burn Rate</p>
+              <p id="burn-rate" class="font-mono text-lg text-[#FF3B30]">+4.2 <span class="text-xs">pts/min</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANALYTICS LIST -->
+        <div class="mt-5 border-t border-white/10">
+          <div class="flex justify-between items-center py-2.5 border-b border-white/5">
+            <div class="flex items-center gap-3">
+              <div id="icon-box-1" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 11V7l-5 5 5 5v-4h3a2 2 0 012 2v2H20v-2a2 2 0 012-2h3" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-[#F5F7F8]">Switching Velocity</p>
+                <p id="sub-1" class="text-[10px] text-[#7C8188]">High fragmentation</p>
+              </div>
+            </div>
+            <span id="val-1" class="font-mono text-xs text-[#FF6B35]">42 sw/hr</span>
+          </div>
+
+          <div class="flex justify-between items-center py-2.5 border-b border-white/5">
+            <div class="flex items-center gap-3">
+              <div id="icon-box-2" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 13l5 5 5-5M7 6l5 5 5-5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-[#F5F7F8]">Scroll Speed</p>
+                <p id="sub-2" class="text-[10px] text-[#7C8188]">Chaotic trajectory</p>
+              </div>
+            </div>
+            <span id="val-2" class="font-mono text-xs text-[#FF6B35]">18 sc/min</span>
+          </div>
+
+          <div class="flex justify-between items-center py-2.5 border-b border-white/5">
+            <div class="flex items-center gap-3">
+              <div id="icon-box-3" class="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF3B30]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4l7 5-3 5 8 6M15 4l5 6-4 4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-[#F5F7F8]">Attention Fragmentation</p>
+                <p id="sub-3" class="text-[10px] text-[#7C8188]">Extreme Red Zone</p>
+              </div>
+            </div>
+            <span id="val-3" class="font-mono text-xs text-[#FF3B30]">Critical</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERVENTION CARD (ACTIVE OVERLAY - OUTSIDE FILTERED TELEMETRY) -->
+      <div id="intervention-container" class="px-6 mb-4 z-20 shrink-0">
+        <div class="bg-[#FF6B35] rounded-xl p-5 shadow-2xl shadow-black/50 border border-white/20 active:scale-[0.98] transition-transform">
+          <div class="flex justify-between items-start mb-2">
+            <h2 class="text-black font-bold text-xs tracking-wider uppercase">Dopamine Loop Detected</h2>
+            <div class="bg-black text-[#FF6B35] px-1.5 py-0.5 rounded text-[8px] font-bold">CRITICAL</div>
+          </div>
+          <p class="text-black/80 text-sm leading-tight mb-4">Screen muted to break fragmentation. Physical feedback intervention active.</p>
+          
+          <div id="reset-progress-bar" class="w-full bg-black/20 h-1 rounded-full mb-3 hidden overflow-hidden">
+            <div id="reset-progress-fill" class="bg-black h-full w-0 transition-all duration-1000"></div>
+          </div>
+
+          <button id="btn-reset-protocol" class="w-full bg-black text-[#F5F7F8] py-3 rounded-lg font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer hover:bg-black/90 active:scale-[0.98] transition-all">
+            <span id="btn-reset-text">Initiate 10s Reset Protocol</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- CONTROLS BAR (SIMULATION TOOLBAR) -->
+    <footer class="shrink-0 bg-[#111214] border-t border-white/5 px-4 pt-3 pb-4">
+      <div class="flex gap-2 pb-3">
+        <!-- Low 22 -->
+        <button id="preset-22" class="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-md py-2 px-3 text-center cursor-pointer transition-all">
+          <p class="text-[8px] text-[#7C8188] uppercase mb-1">Low</p>
+          <p class="font-mono text-xs text-[#39FF88]">22</p>
+        </button>
+        
+        <!-- Mid 52 -->
+        <button id="preset-52" class="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-md py-2 px-3 text-center cursor-pointer transition-all">
+          <p class="text-[8px] text-[#7C8188] uppercase mb-1">Mid</p>
+          <p class="font-mono text-xs text-[#28B8FF]">52</p>
+        </button>
+
+        <!-- High 85 -->
+        <button id="preset-85" class="flex-1 min-w-[80px] bg-white/10 border border-[#FF6B35]/50 rounded-md py-2 px-3 text-center ring-1 ring-[#FF6B35]/30 cursor-pointer transition-all">
+          <p class="text-[8px] text-[#7C8188] uppercase mb-1">High</p>
+          <p class="font-mono text-xs text-[#FF6B35]">85</p>
+        </button>
+      </div>
+      
+      <div class="flex justify-between items-center text-[10px] font-mono text-[#7C8188] px-1">
+        <div id="toggle-shield" class="flex items-center gap-2 cursor-pointer">
+          <div id="dot-shield" class="w-2 h-2 rounded-full bg-[#39FF88]"></div>
+          <span id="text-shield">FOCUS SHIELD: ON</span>
+        </div>
+        <div id="toggle-sensor" class="flex items-center gap-2 cursor-pointer">
+          <div id="dot-sensor" class="w-2 h-2 rounded-full bg-[#FF3B30] jitter"></div>
+          <span id="text-sensor">NEURAL SENSOR: ALRT</span>
+        </div>
+      </div>
+
+      <!-- ANDROID GESTURE PILL -->
+      <div class="flex justify-center mt-4">
+        <div class="w-[72px] h-[4px] bg-white/20 rounded-full"></div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // State
+    let currentNoise = 85;
+    let focusShieldActive = true;
+    let isCountingDown = false;
+    let countdownRemaining = 10;
+    let countdownInterval = null;
+
+    // Time Updater
+    function updateClock() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('status-time').textContent = hh + ':' + mm;
+    }
+    updateClock();
+    setInterval(updateClock, 15000);
+
+    // Nodes for BrainPulse
+    const nodes = [
+      { ring: 1, baseAngle: 0.2, speed: 0.8, size: 3 },
+      { ring: 1, baseAngle: Math.PI/2 + 0.2, speed: 0.8, size: 3 },
+      { ring: 1, baseAngle: Math.PI + 0.2, speed: 0.8, size: 3 },
+      { ring: 1, baseAngle: 3*Math.PI/2 + 0.2, speed: 0.8, size: 3 },
+      { ring: 2, baseAngle: 0.1, speed: -0.6, size: 3.5 },
+      { ring: 2, baseAngle: Math.PI/3 + 0.1, speed: -0.6, size: 3.5 },
+      { ring: 2, baseAngle: 2*Math.PI/3 + 0.1, speed: -0.6, size: 3.5 },
+      { ring: 2, baseAngle: Math.PI + 0.1, speed: -0.6, size: 3.5 },
+      { ring: 2, baseAngle: 4*Math.PI/3 + 0.1, speed: -0.6, size: 3.5 },
+      { ring: 2, baseAngle: 5*Math.PI/3 + 0.1, speed: -0.6, size: 3.5 },
+      { ring: 3, baseAngle: 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: Math.PI/4 + 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: Math.PI/2 + 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: 3*Math.PI/4 + 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: Math.PI + 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: 5*Math.PI/4 + 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: 3*Math.PI/2 + 0.4, speed: 0.45, size: 3 },
+      { ring: 3, baseAngle: 7*Math.PI/4 + 0.4, speed: 0.45, size: 3 },
+    ];
+
+    let frameTime = 0;
+    let lastTime = performance.now();
+
+    function renderPulse(now) {
+      const delta = (now - lastTime) / 1000;
+      lastTime = now;
+      const speedFactor = currentNoise < 36 ? 0.9 : currentNoise < 70 ? 2.0 : 4.5;
+      frameTime += delta * speedFactor;
+
+      const isLow = currentNoise <= 35;
+      const isMid = currentNoise > 35 && currentNoise < 70;
+      const isHigh = currentNoise >= 70;
+
+      const pulseSvg = document.getElementById('pulse-svg');
+      if (isHigh) {
+        pulseSvg.classList.add('jitter');
+      } else {
+        pulseSvg.classList.remove('jitter');
+      }
+
+      // Orbital Rings Update
+      const ring1 = document.getElementById('ring-1');
+      const ring2 = document.getElementById('ring-2');
+      const ring3 = document.getElementById('ring-3');
+      const nucleusGlow = document.getElementById('nucleus-glow');
+      const nucleusCore = document.getElementById('nucleus-core');
+
+      const strokeColor = isLow ? 'rgba(57,255,136,' : isMid ? 'rgba(40,184,255,' : 'rgba(255,107,53,';
+      const mainColor = isLow ? '#39FF88' : isMid ? '#28B8FF' : '#FF6B35';
+
+      ring1.setAttribute('stroke', strokeColor + '0.3)');
+      ring2.setAttribute('stroke', strokeColor + '0.15)');
+      ring3.setAttribute('stroke', strokeColor + '0.05)');
+      nucleusGlow.setAttribute('fill', mainColor);
+      nucleusCore.setAttribute('fill', mainColor);
+
+      // Node and connection geometry
+      const cx = 100, cy = 100;
+      const breathe = Math.sin(frameTime * 1.5) * (isLow ? 3.0 : isMid ? 4.5 : 1.5);
+      const r1 = 40 + breathe;
+      const r2 = 65 + breathe * 1.1;
+      const r3 = 90 + breathe * 0.7;
+
+      ring1.setAttribute('r', r1);
+      ring2.setAttribute('r', r2);
+      ring3.setAttribute('r', r3);
+
+      const computedNodes = nodes.map((node, index) => {
+        const baseR = node.ring === 1 ? r1 : node.ring === 2 ? r2 : r3;
+        let angle = node.baseAngle + frameTime * node.speed * 0.6;
+        let radius = baseR;
+        let jitterX = 0, jitterY = 0;
+        if (isMid) {
+          radius += Math.sin(angle * 3 + frameTime * 2) * 4;
+        } else if (isHigh) {
+          jitterX = Math.sin(frameTime * 25 + index * 17) * 3.5;
+          jitterY = Math.cos(frameTime * 28 + index * 23) * 3.5;
+          radius += Math.sin(angle * 4 + frameTime * 5) * 6;
+        }
+
+        const x = cx + Math.cos(angle) * radius + jitterX;
+        const y = cy + Math.sin(angle) * radius + jitterY;
+
+        let nodeColor = '#39FF88';
+        if (isMid) {
+          nodeColor = index % 2 === 0 ? '#28B8FF' : '#FF6B35';
+        } else if (isHigh) {
+          nodeColor = index % 3 === 0 ? '#FF3B30' : '#FF6B35';
+        }
+        return { x, y, size: node.size, color: nodeColor };
+      });
+
+      // Connections
+      const connGroup = document.getElementById('pulse-connections');
+      let connHTML = '';
+      const maxDist = isLow ? 58 : isMid ? 50 : 42;
+
+      for (let i = 0; i < computedNodes.length; i++) {
+        for (let j = i + 1; j < computedNodes.length; j++) {
+          const n1 = computedNodes[i];
+          const n2 = computedNodes[j];
+          const dist = Math.hypot(n1.x - n2.x, n1.y - n2.y);
+          if (dist < maxDist) {
+            if (isHigh && ((i + j + Math.floor(frameTime * 12)) % 5 === 0)) continue;
+            let cColor = isLow ? '#39FF88' : isMid ? '#28B8FF' : (i + j) % 2 === 0 ? '#FF3B30' : '#FF6B35';
+            let opacity = (1 - dist / maxDist) * 0.45;
+            connHTML += `<line x1="${n1.x.toFixed(1)}" y1="${n1.y.toFixed(1)}" x2="${n2.x.toFixed(1)}" y2="${n2.y.toFixed(1)}" stroke="${cColor}" stroke-width="1" stroke-opacity="${opacity.toFixed(2)}" stroke-dasharray="${isHigh && (i + j) % 3 === 0 ? '2 2' : 'none'}" />`;
+          }
+        }
+      }
+      connGroup.innerHTML = connHTML;
+
+      // Nodes SVG
+      const nodeGroup = document.getElementById('pulse-nodes');
+      let nodeHTML = '';
+      computedNodes.forEach((n, idx) => {
+        const pulseClass = idx % 4 === 0 ? 'class="pulse-dot"' : '';
+        nodeHTML += `<circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${n.size}" fill="${n.color}" ${pulseClass} />`;
+      });
+      nodeGroup.innerHTML = nodeHTML;
+
+      requestAnimationFrame(renderPulse);
+    }
+    requestAnimationFrame(renderPulse);
+
+    // Apply Noise Level UI updates
+    function setNoise(level) {
+      currentNoise = level;
+
+      const scoreEl = document.getElementById('score-val');
+      const telemetryGroup = document.getElementById('telemetry-group');
+      const interventionCard = document.getElementById('intervention-container');
+      const reserveEl = document.getElementById('budget-reserve');
+      const burnEl = document.getElementById('burn-rate');
+
+      scoreEl.textContent = level;
+
+      // Preset button styles
+      const p22 = document.getElementById('preset-22');
+      const p52 = document.getElementById('preset-52');
+      const p85 = document.getElementById('preset-85');
+
+      [p22, p52, p85].forEach(b => {
+        b.className = "flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-md py-2 px-3 text-center cursor-pointer transition-all";
+      });
+
+      if (level === 22) {
+        p22.className = "flex-1 min-w-[80px] bg-white/10 border border-[#39FF88]/50 rounded-md py-2 px-3 text-center ring-1 ring-[#39FF88]/30 cursor-pointer transition-all";
+      } else if (level === 52) {
+        p52.className = "flex-1 min-w-[80px] bg-white/10 border border-[#28B8FF]/50 rounded-md py-2 px-3 text-center ring-1 ring-[#28B8FF]/30 cursor-pointer transition-all";
+      } else if (level === 85) {
+        p85.className = "flex-1 min-w-[80px] bg-white/10 border border-[#FF6B35]/50 rounded-md py-2 px-3 text-center ring-1 ring-[#FF6B35]/30 cursor-pointer transition-all";
+      }
+
+      // Values and Color Themes
+      if (level >= 70) {
+        scoreEl.className = "text-6xl font-light tracking-tighter text-[#FF6B35]";
+        telemetryGroup.classList.add('telemetry-muted');
+        interventionCard.style.display = 'block';
+
+        reserveEl.textContent = "12.4%";
+        reserveEl.className = "font-mono text-lg text-[#FF3B30]";
+        burnEl.innerHTML = `+4.2 <span class="text-xs">pts/min</span>`;
+        burnEl.className = "font-mono text-lg text-[#FF3B30]";
+
+        document.getElementById('sub-1').textContent = "High fragmentation";
+        document.getElementById('val-1').textContent = "42 sw/hr";
+        document.getElementById('val-1').className = "font-mono text-xs text-[#FF6B35]";
+        document.getElementById('icon-box-1').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]";
+
+        document.getElementById('sub-2').textContent = "Chaotic trajectory";
+        document.getElementById('val-2').textContent = "18 sc/min";
+        document.getElementById('val-2').className = "font-mono text-xs text-[#FF6B35]";
+        document.getElementById('icon-box-2').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]";
+
+        document.getElementById('sub-3').textContent = "Extreme Red Zone";
+        document.getElementById('val-3').textContent = "Critical";
+        document.getElementById('val-3').className = "font-mono text-xs text-[#FF3B30]";
+        document.getElementById('icon-box-3').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF3B30]";
+
+        document.getElementById('dot-sensor').className = "w-2 h-2 rounded-full bg-[#FF3B30] jitter";
+        document.getElementById('text-sensor').textContent = "NEURAL SENSOR: ALRT";
+      } else if (level >= 36) {
+        scoreEl.className = "text-6xl font-light tracking-tighter text-[#28B8FF]";
+        telemetryGroup.classList.remove('telemetry-muted');
+        interventionCard.style.display = 'none';
+
+        reserveEl.textContent = "48.0%";
+        reserveEl.className = "font-mono text-lg text-[#F5F7F8]";
+        burnEl.innerHTML = `+1.8 <span class="text-xs">pts/min</span>`;
+        burnEl.className = "font-mono text-lg text-[#28B8FF]";
+
+        document.getElementById('sub-1').textContent = "Moderate velocity";
+        document.getElementById('val-1').textContent = "18 sw/hr";
+        document.getElementById('val-1').className = "font-mono text-xs text-[#28B8FF]";
+        document.getElementById('icon-box-1').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#28B8FF]";
+
+        document.getElementById('sub-2').textContent = "Elevated pace";
+        document.getElementById('val-2').textContent = "7 sc/min";
+        document.getElementById('val-2').className = "font-mono text-xs text-[#28B8FF]";
+        document.getElementById('icon-box-2').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#28B8FF]";
+
+        document.getElementById('sub-3').textContent = "Warning Zone";
+        document.getElementById('val-3').textContent = "Fragmented";
+        document.getElementById('val-3').className = "font-mono text-xs text-[#FF6B35]";
+        document.getElementById('icon-box-3').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF6B35]";
+
+        document.getElementById('dot-sensor').className = "w-2 h-2 rounded-full bg-[#28B8FF]";
+        document.getElementById('text-sensor').textContent = "NEURAL SENSOR: WARN";
+      } else {
+        scoreEl.className = "text-6xl font-light tracking-tighter text-[#39FF88]";
+        telemetryGroup.classList.remove('telemetry-muted');
+        interventionCard.style.display = 'none';
+
+        reserveEl.textContent = "84.2%";
+        reserveEl.className = "font-mono text-lg text-[#F5F7F8]";
+        burnEl.innerHTML = `+0.4 <span class="text-xs">pts/min</span>`;
+        burnEl.className = "font-mono text-lg text-[#39FF88]";
+
+        document.getElementById('sub-1').textContent = "Nominal pace";
+        document.getElementById('val-1').textContent = "6 sw/hr";
+        document.getElementById('val-1').className = "font-mono text-xs text-[#39FF88]";
+        document.getElementById('icon-box-1').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#39FF88]";
+
+        document.getElementById('sub-2').textContent = "Deliberate focus";
+        document.getElementById('val-2').textContent = "2 sc/min";
+        document.getElementById('val-2').className = "font-mono text-xs text-[#39FF88]";
+        document.getElementById('icon-box-2').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#39FF88]";
+
+        document.getElementById('sub-3').textContent = "Stable Zone";
+        document.getElementById('val-3').textContent = "Coherent";
+        document.getElementById('val-3').className = "font-mono text-xs text-[#39FF88]";
+        document.getElementById('icon-box-3').className = "w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#39FF88]";
+
+        document.getElementById('dot-sensor').className = "w-2 h-2 rounded-full bg-[#39FF88]";
+        document.getElementById('text-sensor').textContent = "NEURAL SENSOR: NORM";
+      }
+    }
+
+    // Reset Protocol Countdown
+    const resetBtn = document.getElementById('btn-reset-protocol');
+    const resetText = document.getElementById('btn-reset-text');
+    const progressBar = document.getElementById('reset-progress-bar');
+    const progressFill = document.getElementById('reset-progress-fill');
+
+    resetBtn.addEventListener('click', () => {
+      if (isCountingDown) return;
+      isCountingDown = true;
+      countdownRemaining = 10;
+      progressBar.classList.remove('hidden');
+      progressFill.style.width = "0%";
+
+      resetText.textContent = `BREATHE DEEPLY & EXHALE (10s)...`;
+
+      countdownInterval = setInterval(() => {
+        countdownRemaining--;
+        const pct = ((10 - countdownRemaining) / 10) * 100;
+        progressFill.style.width = pct + "%";
+
+        if (countdownRemaining <= 0) {
+          clearInterval(countdownInterval);
+          isCountingDown = false;
+          resetText.textContent = "Initiate 10s Reset Protocol";
+          progressBar.classList.add('hidden');
+          setNoise(22);
+        } else {
+          resetText.textContent = `BREATHE DEEPLY & EXHALE (${countdownRemaining}s)...`;
+        }
+      }, 1000);
+    });
+
+    // Preset Clicks
+    document.getElementById('preset-22').addEventListener('click', () => setNoise(22));
+    document.getElementById('preset-52').addEventListener('click', () => setNoise(52));
+    document.getElementById('preset-85').addEventListener('click', () => setNoise(85));
+
+    // Shield Toggle
+    document.getElementById('toggle-shield').addEventListener('click', () => {
+      focusShieldActive = !focusShieldActive;
+      document.getElementById('dot-shield').className = focusShieldActive ? "w-2 h-2 rounded-full bg-[#39FF88]" : "w-2 h-2 rounded-full bg-[#FF6B35]";
+      document.getElementById('text-shield').textContent = `FOCUS SHIELD: ${focusShieldActive ? "ON" : "OFF"}`;
+    });
+
+    // Initial state
+    setNoise(85);
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Concentric orbital cognitive field rings -->
+    <!-- Outer Ring (r=26) -->
+    <path
+        android:pathData="M54,54 m-26,0 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0"
+        android:strokeWidth="1.5"
+        android:strokeColor="#5528B8FF"
+        android:fillColor="#00000000" />
+    <!-- Mid Ring (r=18) -->
+    <path
+        android:pathData="M54,54 m-18,0 a18,18 0 1,0 36,0 a18,18 0 1,0 -36,0"
+        android:strokeWidth="1.7"
+        android:strokeColor="#9939FF88"
+        android:fillColor="#00000000" />
+    <!-- Inner Ring (r=10) -->
+    <path
+        android:pathData="M54,54 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+        android:strokeWidth="1.5"
+        android:strokeColor="#CC28B8FF"
+        android:fillColor="#00000000" />
+
+    <!-- Interconnected neural bridge lines -->
+    <path
+        android:pathData="M54,36 L68,46 L62,68 L44,66 L38,48 Z"
+        android:strokeWidth="1.2"
+        android:strokeColor="#7739FF88"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M54,54 L54,36 M54,54 L68,46 M54,54 L62,68 M54,54 L44,66 M54,54 L38,48"
+        android:strokeWidth="1.0"
+        android:strokeColor="#4428B8FF"
+        android:fillColor="#00000000" />
+
+    <!-- Orbital Nodes -->
+    <!-- Node 1: Top -->
+    <path
+        android:pathData="M54,36 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0"
+        android:fillColor="#39FF88" />
+    <!-- Node 2: Top-right -->
+    <path
+        android:pathData="M68,46 m-2.8,0 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0"
+        android:fillColor="#28B8FF" />
+    <!-- Node 3: Bottom-right -->
+    <path
+        android:pathData="M62,68 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0"
+        android:fillColor="#39FF88" />
+    <!-- Node 4: Bottom-left -->
+    <path
+        android:pathData="M44,66 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0"
+        android:fillColor="#28B8FF" />
+    <!-- Node 5: Top-left -->
+    <path
+        android:pathData="M38,48 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0"
+        android:fillColor="#39FF88" />
+
+    <!-- Center Core Node -->
+    <path
+        android:pathData="M54,54 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0"
+        android:fillColor="#F5F7F8" />
+    <path
+        android:pathData="M54,54 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"
+        android:fillColor="#39FF88" />
+</vector>

@@ -1,0 +1,6 @@
+{
+  "name": "NoiseBudget",
+  "description": "Cognitive Load Monitor tracking and breaking attention fragmentation with real-time biometric telemetry and intervention protocols.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
