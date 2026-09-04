@@ -94,6 +94,30 @@
       filter: grayscale(100%) brightness(0.5) contrast(75%);
       -webkit-filter: grayscale(100%) brightness(0.5) contrast(75%);
     }
+    /* Custom Range Slider Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+      height: 6px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #FF6B35;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(255, 107, 53, 0.7);
+      border: 2px solid #FFFFFF;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:active {
+      transform: scale(1.25);
+    }
   </style>
 </head>
 <body class="bg-[#0A0A0B] text-[#F5F7F8]">
@@ -125,18 +149,37 @@
         <span class="text-[9px] font-mono text-[#7C8188]">v2.4</span>
       </div>
       <div class="flex items-center gap-2">
+        <div id="header-audio-chip" class="hidden items-center gap-1 px-1.5 py-0.5 rounded bg-[#28B8FF]/20 text-[#28B8FF] border border-[#28B8FF]/40 text-[9px] font-mono font-bold cursor-pointer" title="Calm Ambient Noise Playing">
+          <svg class="w-2.5 h-2.5 text-[#28B8FF]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+          <span>AUDIO ON</span>
+        </div>
+        <div id="header-dnd-chip" class="hidden items-center gap-1 px-1.5 py-0.5 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/40 text-[9px] font-mono font-bold">
+          <svg class="w-2.5 h-2.5 text-[#FF6B35]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span>DND ON</span>
+        </div>
         <div class="w-1.5 h-1.5 rounded-full bg-[#39FF88] pulse-dot"></div>
         <span class="text-[10px] font-mono tracking-wider text-[#39FF88]">SYSTEM MONITORING</span>
+        <button id="btn-header-settings" class="w-6 h-6 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-[#7C8188] hover:text-white transition-all cursor-pointer ml-1" title="Threshold & Haptics Settings">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
       </div>
     </header>
 
     <!-- VIEW SWITCHER TABS -->
     <div class="flex gap-1 mx-6 mt-2 mb-1 bg-white/5 p-1 rounded-lg border border-white/10 shrink-0 z-30">
       <button id="tab-live" class="flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer">
-        LIVE TELEMETRY
+        LIVE
       </button>
       <button id="tab-weekly" class="flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer">
-        WEEKLY PATTERN
+        WEEKLY
+      </button>
+      <button id="tab-settings" class="flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer">
+        SETTINGS
       </button>
     </div>
 
@@ -406,6 +449,252 @@
           </div>
         </div>
 
+        <!-- SETTINGS VIEW: USER-CONFIGURABLE HAPTIC INTENSITY -->
+        <div id="view-settings" class="hidden flex-1 flex flex-col gap-3 pb-6 overflow-y-auto">
+          <!-- Section Title -->
+          <div class="border-b border-white/10 pb-2 pt-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold tracking-[0.15em] text-[#F5F7F8] uppercase">Threshold Intervention</span>
+              <span class="text-[9px] font-mono bg-[#FF6B35]/20 text-[#FF6B35] px-1.5 py-0.5 rounded font-bold border border-[#FF6B35]/30">≥ 70% TRIGGER</span>
+            </div>
+            <p class="text-[10px] text-[#7C8188] mt-1 leading-normal">Customize physical tactile alerts triggered when cognitive load crosses the critical 70% threshold.</p>
+          </div>
+
+          <!-- Haptic Intensity Slider Card -->
+          <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div class="flex justify-between items-center mb-1.5">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-[#FF6B35]/15 border border-[#FF6B35]/30 flex items-center justify-center text-[#FF6B35]">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5a9 9 0 010 14M7 5a9 9 0 000 14M21 8a13 13 0 010 8M3 8a13 13 0 000 8" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-bold text-white tracking-wide">Vibration Intensity</span>
+              </div>
+              <span id="slider-intensity-badge" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30">80% • STRONG</span>
+            </div>
+
+            <p class="text-[10px] text-[#7C8188] leading-relaxed mb-3">
+              Calibrate the physical actuator amplitude when attention fragmentation crosses 70 pts.
+            </p>
+
+            <!-- Custom Slider Control -->
+            <div class="py-1">
+              <input
+                type="range"
+                id="slider-haptic-intensity"
+                min="0"
+                max="100"
+                step="5"
+                value="80"
+                class="w-full"
+              />
+              <div class="flex justify-between text-[9px] font-mono text-[#7C8188] mt-1.5">
+                <span>0% (OFF)</span>
+                <span>30%</span>
+                <span>65%</span>
+                <span>80%</span>
+                <span>100% (MAX)</span>
+              </div>
+            </div>
+
+            <!-- Preset Buttons -->
+            <div class="grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t border-white/5">
+              <button data-val="0" class="preset-haptic-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer">
+                0% MUTE
+              </button>
+              <button data-val="35" class="preset-haptic-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer">
+                35% SOFT
+              </button>
+              <button data-val="80" class="preset-haptic-btn py-1.5 text-[9px] font-mono font-bold rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/40 transition-all cursor-pointer">
+                80% FIRM
+              </button>
+              <button data-val="100" class="preset-haptic-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer">
+                100% MAX
+              </button>
+            </div>
+
+            <!-- Interactive Test Haptic Button -->
+            <button
+              id="btn-test-haptics"
+              class="w-full mt-3.5 py-2.5 px-3 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg text-[10px] font-mono font-bold tracking-wider text-[#F5F7F8] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all"
+            >
+              <svg class="w-3.5 h-3.5 text-[#FF6B35]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5a9 9 0 010 14M7 5a9 9 0 000 14" stroke-linecap="round"/>
+              </svg>
+              <span>TEST HAPTIC PULSE NOW</span>
+            </button>
+            <p id="test-feedback-status" class="text-[9px] font-mono text-center text-[#39FF88] mt-1.5 opacity-0 transition-opacity h-3">
+              Tactile pulse dispatched
+            </p>
+          </div>
+
+          <!-- SYNC DND MODE CARD -->
+          <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div class="flex justify-between items-center mb-1.5">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-[#28B8FF]/15 border border-[#28B8FF]/30 flex items-center justify-center text-[#28B8FF]">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-bold text-white tracking-wide">Sync System DND Mode</span>
+              </div>
+              <span id="dnd-status-badge" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#39FF88]/20 text-[#39FF88] border border-[#39FF88]/30">SYNCED</span>
+            </div>
+
+            <p class="text-[10px] text-[#7C8188] leading-relaxed mb-3">
+              Automatically triggers Android's Do Not Disturb setting when cognitive load crosses 70% to shield focus from incoming notifications and chimes.
+            </p>
+
+            <!-- Auto-Sync Toggle Row -->
+            <div class="flex justify-between items-center py-2.5 px-3 bg-white/5 rounded-lg border border-white/5 mb-3">
+              <div>
+                <span class="text-xs font-bold text-white block">Auto-Sync at ≥ 70%</span>
+                <span class="text-[9px] text-[#7C8188]">Engages on overload, restores on recovery</span>
+              </div>
+              <button id="toggle-sync-dnd" type="button" class="w-11 h-6 rounded-full bg-[#39FF88] p-0.5 transition-colors relative cursor-pointer" aria-label="Toggle Sync DND">
+                <div id="toggle-sync-dnd-knob" class="w-5 h-5 rounded-full bg-black transition-transform translate-x-5"></div>
+              </button>
+            </div>
+
+            <!-- Permission & Interruption Filter Status -->
+            <div class="p-2.5 rounded-lg bg-white/5 border border-white/10 text-[10px] flex flex-col gap-2 mb-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[#7C8188]">Android Policy Access</span>
+                <span id="dnd-permission-label" class="font-mono font-bold text-[#39FF88]">GRANTED</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#7C8188]">Interruption Filter</span>
+                <span id="dnd-filter-label" class="font-mono text-white">ALL (Normal)</span>
+              </div>
+              <button id="btn-request-dnd-access" type="button" class="hidden w-full py-2 px-2.5 bg-[#FF6B35]/20 hover:bg-[#FF6B35]/30 border border-[#FF6B35]/40 text-[#FF6B35] rounded-md font-mono text-[9px] font-bold text-center cursor-pointer transition-all">
+                AUTHORIZE DND ACCESS IN ANDROID SETTINGS
+              </button>
+            </div>
+
+            <!-- Manual Verification Buttons -->
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                id="btn-test-dnd-on"
+                type="button"
+                class="py-2 px-2 bg-white/10 hover:bg-white/15 border border-white/10 rounded-lg text-[9px] font-mono font-bold tracking-wider text-[#FF6B35] flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
+              >
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span>ENGAGE DND</span>
+              </button>
+              <button
+                id="btn-test-dnd-off"
+                type="button"
+                class="py-2 px-2 bg-white/10 hover:bg-white/15 border border-white/10 rounded-lg text-[9px] font-mono font-bold tracking-wider text-[#39FF88] flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
+              >
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>RESTORE ALL</span>
+              </button>
+            </div>
+            <p id="dnd-feedback-status" class="text-[9px] font-mono text-center text-[#28B8FF] mt-1.5 opacity-0 transition-opacity h-3">
+              System DND filter updated
+            </p>
+          </div>
+
+          <!-- CALM AMBIENT NOISE CARD -->
+          <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div class="flex justify-between items-center mb-1.5">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-[#28B8FF]/15 border border-[#28B8FF]/30 flex items-center justify-center text-[#28B8FF]">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-bold text-white tracking-wide">Calm Ambient & White Noise</span>
+              </div>
+              <span id="audio-status-badge" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#39FF88]/20 text-[#39FF88] border border-[#39FF88]/30">AUTO-READY</span>
+            </div>
+
+            <p class="text-[10px] text-[#7C8188] leading-relaxed mb-3">
+              Plays soothing acoustic textures (Pink noise, Rain, White noise, Ocean) when cognitive load ≥ 70% to facilitate focus.
+            </p>
+
+            <!-- Auto-Play Toggle Row -->
+            <div class="flex justify-between items-center py-2.5 px-3 bg-white/5 rounded-lg border border-white/5 mb-3">
+              <div>
+                <span class="text-xs font-bold text-white block">Auto-Play on Overload (≥ 70%)</span>
+                <span class="text-[9px] text-[#7C8188]">Plays calm audio upon entering overload state</span>
+              </div>
+              <button id="toggle-autoplay-audio" type="button" class="w-11 h-6 rounded-full bg-[#39FF88] p-0.5 transition-colors relative cursor-pointer" aria-label="Toggle Auto-Play Audio">
+                <div id="toggle-autoplay-audio-knob" class="w-5 h-5 rounded-full bg-black transition-transform translate-x-5"></div>
+              </button>
+            </div>
+
+            <!-- Soundscape Selection -->
+            <div class="mb-3">
+              <div class="flex justify-between items-center mb-1.5 text-[10px]">
+                <span class="text-[#7C8188]">Sound Profile</span>
+                <span id="settings-audio-profile-name" class="font-mono text-[#28B8FF] font-bold">Pink Noise (Calm)</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button data-sound="pink_calm" class="settings-sound-btn py-1.5 text-[9px] font-mono font-bold rounded bg-[#28B8FF]/20 text-[#28B8FF] border border-[#28B8FF]/40 transition-all cursor-pointer">
+                  PINK
+                </button>
+                <button data-sound="rain_ambient" class="settings-sound-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer">
+                  RAIN
+                </button>
+                <button data-sound="white_focus" class="settings-sound-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer">
+                  WHITE
+                </button>
+                <button data-sound="ocean_wave" class="settings-sound-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer">
+                  OCEAN
+                </button>
+              </div>
+            </div>
+
+            <!-- Volume Slider -->
+            <div class="mb-3">
+              <div class="flex justify-between items-center mb-1 text-[10px]">
+                <span class="text-[#7C8188]">Audio Volume</span>
+                <span id="slider-volume-badge" class="font-mono text-[#39FF88] font-bold">50%</span>
+              </div>
+              <input type="range" id="slider-audio-volume" min="0" max="100" step="5" value="50" class="w-full" />
+            </div>
+
+            <!-- Test Audio Button -->
+            <button
+              id="btn-test-audio"
+              type="button"
+              class="w-full py-2.5 px-3 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg text-[10px] font-mono font-bold tracking-wider text-[#F5F7F8] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all"
+            >
+              <svg class="w-3.5 h-3.5 text-[#28B8FF]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+              <span id="btn-test-audio-text">TEST / PLAY AMBIENT NOISE NOW</span>
+            </button>
+          </div>
+
+          <!-- Protocol Technical Specs Card -->
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3.5">
+            <h4 class="text-[10px] font-bold text-white uppercase tracking-wider mb-2">Protocol Architecture</h4>
+            <div class="flex flex-col gap-1.5 text-[10px]">
+              <div class="flex justify-between items-center py-1 border-b border-white/5">
+                <span class="text-[#7C8188]">Activation Barrier</span>
+                <span class="font-mono text-[#FF6B35] font-bold">≥ 70 pts Overload</span>
+              </div>
+              <div class="flex justify-between items-center py-1 border-b border-white/5">
+                <span class="text-[#7C8188]">Tactile Waveform</span>
+                <span class="font-mono text-white">Double-Pulse (45ms·60ms·45ms)</span>
+              </div>
+              <div class="flex justify-between items-center py-1 border-b border-white/5">
+                <span class="text-[#7C8188]">Actuator Pipeline</span>
+                <span class="font-mono text-[#39FF88]">Android VibratorManager + API</span>
+              </div>
+              <div class="flex justify-between items-center py-1">
+                <span class="text-[#7C8188]">Visual Friction</span>
+                <span class="font-mono text-white">Grayscale Desat + 10s Delay</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- INTERVENTION CARD (ACTIVE OVERLAY - OUTSIDE FILTERED TELEMETRY) -->
@@ -418,11 +707,54 @@
           <p class="text-black/80 text-sm leading-tight mb-2.5">Screen muted to break fragmentation. Physical feedback intervention active.</p>
           
           <!-- Tactile Feedback Status Badge -->
-          <div class="flex items-center gap-1.5 text-[9px] font-mono text-black font-semibold mb-3 bg-black/15 px-2 py-0.5 rounded w-fit">
+          <div class="flex items-center gap-1.5 text-[9px] font-mono text-black font-semibold mb-1.5 bg-black/15 px-2 py-0.5 rounded w-fit">
             <svg class="w-3 h-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 2v20M17 5a9 9 0 010 14M7 5a9 9 0 000 14M21 8a13 13 0 010 8M3 8a13 13 0 000 8" stroke-linecap="round"/>
             </svg>
-            <span>PHYSICAL ALERT: TACTILE DOUBLE-PULSE FIRED</span>
+            <span id="tactile-badge-text">PHYSICAL ALERT: TACTILE DOUBLE-PULSE FIRED (80%)</span>
+          </div>
+
+          <!-- DND Sync Status Badge -->
+          <div id="intervention-dnd-row" class="flex items-center justify-between text-[9px] font-mono text-black font-semibold mb-1.5 bg-black/15 px-2 py-0.5 rounded">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+              <span id="intervention-dnd-text">SYSTEM DND: ACTIVATED (PRIORITY ONLY)</span>
+            </div>
+            <button id="btn-intervention-grant-dnd" type="button" class="hidden bg-black text-[#FF6B35] hover:bg-black/90 font-bold px-1.5 py-0.5 rounded text-[8px] cursor-pointer">
+              GRANT ACCESS
+            </button>
+          </div>
+
+          <!-- Calm Ambient Noise Intervention Row -->
+          <div id="intervention-audio-row" class="flex items-center justify-between text-[9px] font-mono text-black font-semibold mb-2 bg-black/15 px-2 py-0.5 rounded">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-black" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+              <span id="intervention-audio-text">FOCUS NOISE: PLAYING (PINK NOISE)</span>
+            </div>
+            <button id="btn-intervention-toggle-audio" type="button" class="bg-black text-[#39FF88] hover:bg-black/90 font-bold px-2 py-0.5 rounded text-[8px] cursor-pointer font-mono">
+              MUTE
+            </button>
+          </div>
+
+          <!-- Ambient Sound Profile Chips -->
+          <div class="grid grid-cols-4 gap-1 mb-3">
+            <button data-sound="pink_calm" class="btn-sound-chip py-1 text-[8px] font-mono font-bold rounded bg-black text-[#FF6B35] transition-all cursor-pointer">
+              PINK
+            </button>
+            <button data-sound="rain_ambient" class="btn-sound-chip py-1 text-[8px] font-mono font-bold rounded bg-black/20 text-black transition-all cursor-pointer">
+              RAIN
+            </button>
+            <button data-sound="white_focus" class="btn-sound-chip py-1 text-[8px] font-mono font-bold rounded bg-black/20 text-black transition-all cursor-pointer">
+              WHITE
+            </button>
+            <button data-sound="ocean_wave" class="btn-sound-chip py-1 text-[8px] font-mono font-bold rounded bg-black/20 text-black transition-all cursor-pointer">
+              OCEAN
+            </button>
           </div>
           
           <div id="reset-progress-bar" class="w-full bg-black/20 h-1 rounded-full mb-3 hidden overflow-hidden">
@@ -624,21 +956,44 @@
     }
     requestAnimationFrame(renderPulse);
 
-    // Vibration Feedback Protocol (Subtle Double-Pulse Threshold Alert)
-    function triggerPhysicalVibrationProtocol() {
-      // 1. Native Android Haptics via JavascriptInterface
+    // Haptic Intensity Settings State (Stored in localStorage, default 80%)
+    let hapticIntensity = parseInt(localStorage.getItem('noisebudget_haptic_intensity') || '80', 10);
+
+    function getHapticIntensityDescriptor(intensity) {
+      if (intensity === 0) return "0% • MUTED";
+      if (intensity <= 35) return `${intensity}% • SUBTLE`;
+      if (intensity <= 65) return `${intensity}% • MEDIUM`;
+      if (intensity <= 85) return `${intensity}% • STRONG`;
+      return `${intensity}% • MAXIMUM`;
+    }
+
+    // Vibration Feedback Protocol (User-Configurable Double-Pulse Alert)
+    function triggerPhysicalVibrationProtocol(overrideIntensity) {
+      const intensity = typeof overrideIntensity === 'number' ? overrideIntensity : hapticIntensity;
+      if (intensity <= 0) {
+        console.log("Haptic feedback suppressed (intensity is 0% / muted)");
+        return;
+      }
+
+      // 1. Native Android Haptics via JavascriptInterface (intensity-aware)
       try {
-        if (window.AndroidHaptics && typeof window.AndroidHaptics.triggerOverloadHaptic === 'function') {
-          window.AndroidHaptics.triggerOverloadHaptic();
+        if (window.AndroidHaptics) {
+          if (typeof window.AndroidHaptics.triggerOverloadHapticWithIntensity === 'function') {
+            window.AndroidHaptics.triggerOverloadHapticWithIntensity(intensity);
+          } else if (typeof window.AndroidHaptics.triggerOverloadHaptic === 'function') {
+            window.AndroidHaptics.triggerOverloadHaptic();
+          }
         }
       } catch (err) {
         console.warn("AndroidHaptics error:", err);
       }
 
-      // 2. Standard Web Vibration API Fallback (45ms vibrate, 60ms pause, 45ms vibrate)
+      // 2. Standard Web Vibration API Fallback (duration proportional to intensity)
       try {
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
-          navigator.vibrate([45, 60, 45]);
+          const factor = intensity / 100;
+          const pulse = Math.max(10, Math.round(45 * factor));
+          navigator.vibrate([pulse, 60, pulse]);
         }
       } catch (err) {
         console.warn("Navigator vibrate error:", err);
@@ -658,12 +1013,425 @@
 
     let previousNoiseLevel = 85;
 
+    // ==========================================
+    // CALM AMBIENT & WHITE NOISE AUDIO ENGINE
+    // ==========================================
+    class CalmAudioEngine {
+      constructor() {
+        this.audioCtx = null;
+        this.gainNode = null;
+        this.noiseNode = null;
+        this.filterNode = null;
+        this.modulatorOsc = null;
+        this.modulatorGain = null;
+        this.isPlaying = false;
+        this.currentSound = 'pink_calm';
+        this.volume = 0.5;
+      }
+
+      initContext() {
+        if (!this.audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.audioCtx = new AudioContextClass();
+          }
+        }
+        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume();
+        }
+      }
+
+      setVolume(val) {
+        this.volume = Math.max(0, Math.min(1, val));
+        if (this.gainNode && this.audioCtx) {
+          this.gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
+          this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, this.audioCtx.currentTime);
+          this.gainNode.gain.linearRampToValueAtTime(this.volume, this.audioCtx.currentTime + 0.1);
+        }
+      }
+
+      createNoiseBuffer(type) {
+        if (!this.audioCtx) return null;
+        const bufferSize = this.audioCtx.sampleRate * 4; // 4 seconds loopable buffer
+        const buffer = this.audioCtx.createBuffer(2, bufferSize, this.audioCtx.sampleRate);
+
+        for (let channel = 0; channel < 2; channel++) {
+          const channelData = buffer.getChannelData(channel);
+          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+          let lastBrown = 0;
+
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            if (type === 'pink_calm') {
+              // Paul Kellet's refined 1/f Pink noise filter
+              b0 = 0.99886 * b0 + white * 0.0555179;
+              b1 = 0.99332 * b1 + white * 0.0750759;
+              b2 = 0.96900 * b2 + white * 0.1538520;
+              b3 = 0.86650 * b3 + white * 0.3104856;
+              b4 = 0.55000 * b4 + white * 0.5329522;
+              b5 = -0.7616 * b5 - white * 0.0168980;
+              channelData[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.09;
+              b6 = white * 0.115926;
+            } else if (type === 'ocean_wave') {
+              // Brown noise (integrated random walk for low frequency ocean roar)
+              lastBrown = (lastBrown + (0.025 * white)) / 1.02;
+              channelData[i] = lastBrown * 2.8;
+            } else if (type === 'rain_ambient') {
+              // High-density rainfall simulation with soft droplets
+              b0 = 0.99 * b0 + white * 0.09;
+              channelData[i] = (b0 + white * 0.15) * 0.28;
+            } else {
+              // Pure white noise (flat acoustic mask)
+              channelData[i] = white * 0.18;
+            }
+          }
+        }
+        return buffer;
+      }
+
+      play(soundType = 'pink_calm', volume = 0.5) {
+        this.initContext();
+        if (!this.audioCtx) return;
+
+        this.stop();
+
+        this.currentSound = soundType;
+        this.volume = volume;
+
+        const buffer = this.createNoiseBuffer(soundType);
+        if (!buffer) return;
+
+        this.noiseNode = this.audioCtx.createBufferSource();
+        this.noiseNode.buffer = buffer;
+        this.noiseNode.loop = true;
+
+        this.gainNode = this.audioCtx.createGain();
+        this.gainNode.gain.setValueAtTime(0.001, this.audioCtx.currentTime);
+        this.gainNode.gain.exponentialRampToValueAtTime(Math.max(0.01, this.volume), this.audioCtx.currentTime + 1.2);
+
+        this.filterNode = this.audioCtx.createBiquadFilter();
+
+        if (soundType === 'ocean_wave') {
+          this.filterNode.type = 'lowpass';
+          this.filterNode.frequency.setValueAtTime(450, this.audioCtx.currentTime);
+          // Modulate filter cutoff for swelling ocean waves
+          this.modulatorOsc = this.audioCtx.createOscillator();
+          this.modulatorOsc.frequency.setValueAtTime(0.12, this.audioCtx.currentTime); // 8-second wave swells
+          this.modulatorGain = this.audioCtx.createGain();
+          this.modulatorGain.gain.setValueAtTime(280, this.audioCtx.currentTime);
+          this.modulatorOsc.connect(this.modulatorGain);
+          this.modulatorGain.connect(this.filterNode.frequency);
+          this.modulatorOsc.start();
+        } else if (soundType === 'rain_ambient') {
+          this.filterNode.type = 'bandpass';
+          this.filterNode.frequency.setValueAtTime(1400, this.audioCtx.currentTime);
+          this.filterNode.Q.setValueAtTime(0.7, this.audioCtx.currentTime);
+        } else if (soundType === 'pink_calm') {
+          this.filterNode.type = 'lowpass';
+          this.filterNode.frequency.setValueAtTime(3200, this.audioCtx.currentTime);
+        } else {
+          this.filterNode.type = 'lowpass';
+          this.filterNode.frequency.setValueAtTime(8000, this.audioCtx.currentTime);
+        }
+
+        this.noiseNode.connect(this.filterNode);
+        this.filterNode.connect(this.gainNode);
+        this.gainNode.connect(this.audioCtx.destination);
+
+        this.noiseNode.start();
+        this.isPlaying = true;
+        updateAmbientAudioUI();
+      }
+
+      stop() {
+        if (this.gainNode && this.audioCtx && this.isPlaying) {
+          try {
+            this.gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
+            this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, this.audioCtx.currentTime);
+            this.gainNode.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.6);
+            setTimeout(() => {
+              if (this.noiseNode) {
+                try { this.noiseNode.stop(); this.noiseNode.disconnect(); } catch (e) {}
+                this.noiseNode = null;
+              }
+              if (this.modulatorOsc) {
+                try { this.modulatorOsc.stop(); this.modulatorOsc.disconnect(); } catch (e) {}
+                this.modulatorOsc = null;
+              }
+            }, 650);
+          } catch (e) {
+            if (this.noiseNode) {
+              try { this.noiseNode.stop(); } catch (e2) {}
+              this.noiseNode = null;
+            }
+          }
+        } else if (this.noiseNode) {
+          try { this.noiseNode.stop(); } catch (e) {}
+          this.noiseNode = null;
+        }
+        this.isPlaying = false;
+        updateAmbientAudioUI();
+      }
+    }
+
+    const calmAudioEngine = new CalmAudioEngine();
+    let autoPlayAudio = localStorage.getItem('noisebudget_autoplay_audio') !== 'false';
+    let currentSoundProfile = localStorage.getItem('noisebudget_sound_profile') || 'pink_calm';
+    let audioVolume = parseInt(localStorage.getItem('noisebudget_audio_volume') || '50', 10);
+
+    const soundNames = {
+      'pink_calm': 'Pink Noise (Calm)',
+      'rain_ambient': 'Gentle Rain (Ambient)',
+      'white_focus': 'White Noise (Masking)',
+      'ocean_wave': 'Ocean Waves (Deep)'
+    };
+
+    function updateAmbientAudioUI() {
+      const headerChip = document.getElementById('header-audio-chip');
+      const interventionAudioText = document.getElementById('intervention-audio-text');
+      const interventionToggleBtn = document.getElementById('btn-intervention-toggle-audio');
+      const testAudioBtnText = document.getElementById('btn-test-audio-text');
+      const audioBadge = document.getElementById('audio-status-badge');
+      const toggleKnob = document.getElementById('toggle-autoplay-audio-knob');
+      const toggleBtn = document.getElementById('toggle-autoplay-audio');
+      const profileName = document.getElementById('settings-audio-profile-name');
+
+      if (headerChip) {
+        if (calmAudioEngine.isPlaying) {
+          headerChip.classList.remove('hidden');
+          headerChip.classList.add('flex');
+        } else {
+          headerChip.classList.add('hidden');
+          headerChip.classList.remove('flex');
+        }
+      }
+
+      if (interventionAudioText && interventionToggleBtn) {
+        const soundLabel = soundNames[currentSoundProfile] || 'CALM NOISE';
+        if (calmAudioEngine.isPlaying) {
+          interventionAudioText.textContent = `FOCUS NOISE: PLAYING (${soundLabel.split(' ')[0].toUpperCase()})`;
+          interventionToggleBtn.textContent = 'MUTE';
+          interventionToggleBtn.className = 'bg-black text-[#FF6B35] hover:bg-black/90 font-bold px-2 py-0.5 rounded text-[8px] cursor-pointer font-mono';
+        } else {
+          interventionAudioText.textContent = `FOCUS NOISE: READY (${soundLabel.split(' ')[0].toUpperCase()})`;
+          interventionToggleBtn.textContent = 'PLAY';
+          interventionToggleBtn.className = 'bg-black text-[#39FF88] hover:bg-black/90 font-bold px-2 py-0.5 rounded text-[8px] cursor-pointer font-mono';
+        }
+      }
+
+      if (testAudioBtnText) {
+        testAudioBtnText.textContent = calmAudioEngine.isPlaying ? 'STOP / MUTE AMBIENT NOISE' : 'TEST / PLAY AMBIENT NOISE NOW';
+      }
+
+      if (audioBadge) {
+        if (!autoPlayAudio) {
+          audioBadge.textContent = 'MANUAL';
+          audioBadge.className = 'font-mono text-xs font-bold px-2 py-0.5 rounded bg-white/10 text-[#7C8188] border border-white/10';
+        } else if (calmAudioEngine.isPlaying) {
+          audioBadge.textContent = '● PLAYING';
+          audioBadge.className = 'font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#28B8FF]/20 text-[#28B8FF] border border-[#28B8FF]/40 animate-pulse';
+        } else {
+          audioBadge.textContent = 'AUTO-READY';
+          audioBadge.className = 'font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#39FF88]/20 text-[#39FF88] border border-[#39FF88]/30';
+        }
+      }
+
+      if (toggleBtn && toggleKnob) {
+        if (autoPlayAudio) {
+          toggleBtn.className = 'w-11 h-6 rounded-full bg-[#39FF88] p-0.5 transition-colors relative cursor-pointer';
+          toggleKnob.className = 'w-5 h-5 rounded-full bg-black transition-transform translate-x-5';
+        } else {
+          toggleBtn.className = 'w-11 h-6 rounded-full bg-white/10 p-0.5 transition-colors relative cursor-pointer';
+          toggleKnob.className = 'w-5 h-5 rounded-full bg-[#7C8188] transition-transform translate-x-0';
+        }
+      }
+
+      if (profileName) {
+        profileName.textContent = soundNames[currentSoundProfile] || 'Pink Noise (Calm)';
+      }
+
+      // Update chips styling in intervention card
+      document.querySelectorAll('.btn-sound-chip').forEach(chip => {
+        const s = chip.getAttribute('data-sound');
+        if (s === currentSoundProfile) {
+          chip.className = 'btn-sound-chip py-1 text-[8px] font-mono font-bold rounded bg-black text-[#FF6B35] transition-all cursor-pointer';
+        } else {
+          chip.className = 'btn-sound-chip py-1 text-[8px] font-mono font-bold rounded bg-black/20 text-black hover:bg-black/30 transition-all cursor-pointer';
+        }
+      });
+
+      // Update sound buttons in settings view
+      document.querySelectorAll('.settings-sound-btn').forEach(btn => {
+        const s = btn.getAttribute('data-sound');
+        if (s === currentSoundProfile) {
+          btn.className = 'settings-sound-btn py-1.5 text-[9px] font-mono font-bold rounded bg-[#28B8FF]/20 text-[#28B8FF] border border-[#28B8FF]/40 transition-all cursor-pointer';
+        } else {
+          btn.className = 'settings-sound-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer';
+        }
+      });
+    }
+
+    function setSoundProfile(type) {
+      currentSoundProfile = type;
+      localStorage.setItem('noisebudget_sound_profile', type);
+      if (calmAudioEngine.isPlaying) {
+        calmAudioEngine.play(currentSoundProfile, audioVolume / 100);
+      }
+      updateAmbientAudioUI();
+    }
+
+    // SYNC DND MODE CONTROLLER
+    let syncDndEnabled = localStorage.getItem('noisebudget_sync_dnd') !== 'false';
+    let isDndEngaged = false;
+
+    function checkSystemDndAccess() {
+      try {
+        if (window.AndroidDnd && typeof window.AndroidDnd.isDndAccessGranted === 'function') {
+          return window.AndroidDnd.isDndAccessGranted();
+        }
+      } catch (e) {
+        console.warn("AndroidDnd isDndAccessGranted error:", e);
+      }
+      return false;
+    }
+
+    function requestSystemDndAccess() {
+      try {
+        if (window.AndroidDnd && typeof window.AndroidDnd.requestDndAccess === 'function') {
+          window.AndroidDnd.requestDndAccess();
+        }
+      } catch (e) {
+        console.warn("AndroidDnd requestDndAccess error:", e);
+      }
+    }
+
+    function dispatchSystemDnd(enable) {
+      let ok = false;
+      try {
+        if (window.AndroidDnd && typeof window.AndroidDnd.setDndMode === 'function') {
+          ok = window.AndroidDnd.setDndMode(enable);
+        }
+      } catch (e) {
+        console.warn("AndroidDnd setDndMode error:", e);
+      }
+      // If native bridge applied it, or simulated fallback in browser
+      isDndEngaged = enable;
+      updateDndUI();
+      return ok;
+    }
+
+    function updateDndUI() {
+      const hasAccess = checkSystemDndAccess();
+      const permLabel = document.getElementById('dnd-permission-label');
+      const reqBtn = document.getElementById('btn-request-dnd-access');
+      const filterLabel = document.getElementById('dnd-filter-label');
+      const dndStatusBadge = document.getElementById('dnd-status-badge');
+      const headerChip = document.getElementById('header-dnd-chip');
+      const interventionDndText = document.getElementById('intervention-dnd-text');
+      const interventionGrantBtn = document.getElementById('btn-intervention-grant-dnd');
+      const toggleKnob = document.getElementById('toggle-sync-dnd-knob');
+      const toggleBtn = document.getElementById('toggle-sync-dnd');
+
+      if (toggleKnob && toggleBtn) {
+        if (syncDndEnabled) {
+          toggleBtn.className = "w-11 h-6 rounded-full bg-[#39FF88] p-0.5 transition-colors relative cursor-pointer";
+          toggleKnob.className = "w-5 h-5 rounded-full bg-black transition-transform translate-x-5";
+        } else {
+          toggleBtn.className = "w-11 h-6 rounded-full bg-white/10 p-0.5 transition-colors relative cursor-pointer";
+          toggleKnob.className = "w-5 h-5 rounded-full bg-[#7C8188] transition-transform translate-x-0";
+        }
+      }
+
+      if (permLabel) {
+        if (hasAccess) {
+          permLabel.textContent = "GRANTED";
+          permLabel.className = "font-mono font-bold text-[#39FF88]";
+          if (reqBtn) reqBtn.classList.add('hidden');
+        } else {
+          permLabel.textContent = "PERMISSION REQUIRED";
+          permLabel.className = "font-mono font-bold text-[#FF6B35]";
+          if (reqBtn) reqBtn.classList.remove('hidden');
+        }
+      }
+
+      if (filterLabel) {
+        if (isDndEngaged) {
+          filterLabel.textContent = "PRIORITY ONLY (Filtered)";
+          filterLabel.className = "font-mono text-[#FF6B35] font-bold";
+        } else {
+          filterLabel.textContent = "ALL (Normal Notifications)";
+          filterLabel.className = "font-mono text-white";
+        }
+      }
+
+      if (dndStatusBadge) {
+        if (!syncDndEnabled) {
+          dndStatusBadge.textContent = "DISABLED";
+          dndStatusBadge.className = "font-mono text-xs font-bold px-2 py-0.5 rounded bg-white/10 text-[#7C8188] border border-white/10";
+        } else if (isDndEngaged) {
+          dndStatusBadge.textContent = "● ENGAGED";
+          dndStatusBadge.className = "font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/40 animate-pulse";
+        } else if (!hasAccess) {
+          dndStatusBadge.textContent = "AUTH NEEDED";
+          dndStatusBadge.className = "font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#FF6B35]/15 text-[#FF6B35] border border-[#FF6B35]/30";
+        } else {
+          dndStatusBadge.textContent = "SYNCED";
+          dndStatusBadge.className = "font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#39FF88]/20 text-[#39FF88] border border-[#39FF88]/30";
+        }
+      }
+
+      // Header chip
+      if (headerChip) {
+        if (isDndEngaged) {
+          headerChip.classList.remove('hidden');
+          headerChip.classList.add('flex');
+        } else {
+          headerChip.classList.add('hidden');
+          headerChip.classList.remove('flex');
+        }
+      }
+
+      // Intervention card
+      if (interventionDndText) {
+        if (!syncDndEnabled) {
+          interventionDndText.textContent = "SYSTEM DND: SYNC DISABLED IN SETTINGS";
+          if (interventionGrantBtn) interventionGrantBtn.classList.add('hidden');
+        } else if (hasAccess || isDndEngaged) {
+          interventionDndText.textContent = "SYSTEM DND: ACTIVATED (PRIORITY ONLY)";
+          if (interventionGrantBtn) interventionGrantBtn.classList.add('hidden');
+        } else {
+          interventionDndText.textContent = "SYSTEM DND: PERMISSION REQUIRED";
+          if (interventionGrantBtn) interventionGrantBtn.classList.remove('hidden');
+        }
+      }
+    }
+
     // Apply Noise Level UI updates
     function setNoise(level) {
       // Trigger subtle vibration feedback when cognitive load crosses the 70% threshold
       if (previousNoiseLevel < 70 && level >= 70) {
         triggerPhysicalVibrationProtocol();
       }
+
+      // Sync System DND Mode when cognitive load index exceeds 70%
+      if (level >= 70) {
+        if (syncDndEnabled) {
+          dispatchSystemDnd(true);
+        }
+        // Auto-play calm ambient noise when crossing into overload
+        if (autoPlayAudio && (!calmAudioEngine.isPlaying || previousNoiseLevel < 70)) {
+          calmAudioEngine.play(currentSoundProfile, audioVolume / 100);
+        }
+      } else {
+        if (isDndEngaged) {
+          dispatchSystemDnd(false);
+        }
+        // When recovering below 70%, stop automated calm audio if running
+        if (calmAudioEngine.isPlaying) {
+          calmAudioEngine.stop();
+        }
+      }
+
       previousNoiseLevel = level;
       currentNoise = level;
 
@@ -904,27 +1672,272 @@
       renderWeeklyRows();
     }
 
-    // Tab Switching
+    // HAPTIC INTENSITY CONFIGURATION & INTERACTION
+    function updateInterventionTactileBadge() {
+      const badgeText = document.getElementById('tactile-badge-text');
+      if (badgeText) {
+        if (hapticIntensity === 0) {
+          badgeText.textContent = "PHYSICAL ALERT: TACTILE MUTED (0%)";
+        } else {
+          badgeText.textContent = `PHYSICAL ALERT: TACTILE DOUBLE-PULSE FIRED (${hapticIntensity}%)`;
+        }
+      }
+    }
+
+    function setHapticIntensity(val) {
+      hapticIntensity = Math.max(0, Math.min(100, parseInt(val, 10)));
+      localStorage.setItem('noisebudget_haptic_intensity', hapticIntensity.toString());
+
+      const slider = document.getElementById('slider-haptic-intensity');
+      if (slider && parseInt(slider.value, 10) !== hapticIntensity) {
+        slider.value = hapticIntensity;
+      }
+
+      const badge = document.getElementById('slider-intensity-badge');
+      if (badge) {
+        badge.textContent = getHapticIntensityDescriptor(hapticIntensity);
+        badge.className = hapticIntensity === 0 
+          ? "font-mono text-xs font-bold px-2 py-0.5 rounded bg-white/10 text-[#7C8188] border border-white/10"
+          : "font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30";
+      }
+
+      // Update preset pills styling
+      document.querySelectorAll('.preset-haptic-btn').forEach(btn => {
+        const pVal = parseInt(btn.getAttribute('data-val'), 10);
+        if (pVal === hapticIntensity) {
+          btn.className = "preset-haptic-btn py-1.5 text-[9px] font-mono font-bold rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/40 transition-all cursor-pointer";
+        } else {
+          btn.className = "preset-haptic-btn py-1.5 text-[9px] font-mono font-bold rounded bg-white/5 hover:bg-white/10 text-[#7C8188] border border-white/5 transition-all cursor-pointer";
+        }
+      });
+
+      updateInterventionTactileBadge();
+    }
+
+    // Slider Event Listener
+    const hapticSlider = document.getElementById('slider-haptic-intensity');
+    if (hapticSlider) {
+      hapticSlider.value = hapticIntensity;
+      hapticSlider.addEventListener('input', (e) => {
+        setHapticIntensity(e.target.value);
+      });
+    }
+
+    // Preset Buttons Listeners
+    document.querySelectorAll('.preset-haptic-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.getAttribute('data-val'), 10);
+        setHapticIntensity(val);
+      });
+    });
+
+    // Test Button Listener
+    const testHapticBtn = document.getElementById('btn-test-haptics');
+    if (testHapticBtn) {
+      testHapticBtn.addEventListener('click', () => {
+        triggerPhysicalVibrationProtocol(hapticIntensity);
+        const statusEl = document.getElementById('test-feedback-status');
+        if (statusEl) {
+          statusEl.textContent = hapticIntensity === 0 
+            ? "Tactile feedback muted (0% intensity)"
+            : `Fired test double-pulse at ${hapticIntensity}% intensity`;
+          statusEl.style.opacity = "1";
+          setTimeout(() => {
+            statusEl.style.opacity = "0";
+          }, 2200);
+        }
+      });
+    }
+
+    // TAB SWITCHING (LIVE, WEEKLY, SETTINGS)
     const tabLive = document.getElementById('tab-live');
     const tabWeekly = document.getElementById('tab-weekly');
+    const tabSettings = document.getElementById('tab-settings');
     const viewLive = document.getElementById('view-live');
     const viewWeekly = document.getElementById('view-weekly');
+    const viewSettings = document.getElementById('view-settings');
+    const btnHeaderSettings = document.getElementById('btn-header-settings');
 
-    tabLive.addEventListener('click', () => {
-      viewLive.classList.remove('hidden');
-      viewWeekly.classList.add('hidden');
-      tabLive.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer";
-      tabWeekly.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer";
-    });
-
-    tabWeekly.addEventListener('click', () => {
+    function switchTab(destination) {
       viewLive.classList.add('hidden');
-      viewWeekly.classList.remove('hidden');
-      tabWeekly.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer";
-      tabLive.className = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer";
-      renderWeeklyRows();
+      viewWeekly.classList.add('hidden');
+      viewSettings.classList.add('hidden');
+
+      const activeClass = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-white/15 text-[#F5F7F8] transition-all cursor-pointer";
+      const inactiveClass = "flex-1 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-md text-[#7C8188] hover:text-[#F5F7F8] transition-all cursor-pointer";
+
+      tabLive.className = inactiveClass;
+      tabWeekly.className = inactiveClass;
+      tabSettings.className = inactiveClass;
+
+      if (destination === 'live') {
+        viewLive.classList.remove('hidden');
+        tabLive.className = activeClass;
+      } else if (destination === 'weekly') {
+        viewWeekly.classList.remove('hidden');
+        tabWeekly.className = activeClass;
+        renderWeeklyRows();
+      } else if (destination === 'settings') {
+        viewSettings.classList.remove('hidden');
+        tabSettings.className = activeClass;
+      }
+    }
+
+    tabLive.addEventListener('click', () => switchTab('live'));
+    tabWeekly.addEventListener('click', () => switchTab('weekly'));
+    tabSettings.addEventListener('click', () => switchTab('settings'));
+    if (btnHeaderSettings) {
+      btnHeaderSettings.addEventListener('click', () => switchTab('settings'));
+    }
+
+    // DND CONTROLS EVENT LISTENERS
+    const toggleSyncDnd = document.getElementById('toggle-sync-dnd');
+    if (toggleSyncDnd) {
+      toggleSyncDnd.addEventListener('click', () => {
+        syncDndEnabled = !syncDndEnabled;
+        localStorage.setItem('noisebudget_sync_dnd', syncDndEnabled.toString());
+        if (!syncDndEnabled && isDndEngaged) {
+          dispatchSystemDnd(false);
+        } else if (syncDndEnabled && currentNoise >= 70) {
+          dispatchSystemDnd(true);
+        } else {
+          updateDndUI();
+        }
+      });
+    }
+
+    const btnRequestDnd = document.getElementById('btn-request-dnd-access');
+    if (btnRequestDnd) {
+      btnRequestDnd.addEventListener('click', () => {
+        requestSystemDndAccess();
+      });
+    }
+
+    const btnInterventionGrantDnd = document.getElementById('btn-intervention-grant-dnd');
+    if (btnInterventionGrantDnd) {
+      btnInterventionGrantDnd.addEventListener('click', () => {
+        requestSystemDndAccess();
+      });
+    }
+
+    const btnTestDndOn = document.getElementById('btn-test-dnd-on');
+    if (btnTestDndOn) {
+      btnTestDndOn.addEventListener('click', () => {
+        dispatchSystemDnd(true);
+        const feedback = document.getElementById('dnd-feedback-status');
+        if (feedback) {
+          feedback.textContent = "System DND forced ON (Priority Filter)";
+          feedback.style.color = "#FF6B35";
+          feedback.style.opacity = "1";
+          setTimeout(() => { feedback.style.opacity = "0"; }, 2400);
+        }
+      });
+    }
+
+    const btnTestDndOff = document.getElementById('btn-test-dnd-off');
+    if (btnTestDndOff) {
+      btnTestDndOff.addEventListener('click', () => {
+        dispatchSystemDnd(false);
+        const feedback = document.getElementById('dnd-feedback-status');
+        if (feedback) {
+          feedback.textContent = "System DND restored (All Notifications)";
+          feedback.style.color = "#39FF88";
+          feedback.style.opacity = "1";
+          setTimeout(() => { feedback.style.opacity = "0"; }, 2400);
+        }
+      });
+    }
+
+    // AMBIENT AUDIO CONTROLS EVENT LISTENERS
+    const toggleAutoplayAudio = document.getElementById('toggle-autoplay-audio');
+    if (toggleAutoplayAudio) {
+      toggleAutoplayAudio.addEventListener('click', () => {
+        autoPlayAudio = !autoPlayAudio;
+        localStorage.setItem('noisebudget_autoplay_audio', autoPlayAudio.toString());
+        if (autoPlayAudio && currentNoise >= 70 && !calmAudioEngine.isPlaying) {
+          calmAudioEngine.play(currentSoundProfile, audioVolume / 100);
+        } else if (!autoPlayAudio && calmAudioEngine.isPlaying && currentNoise < 70) {
+          calmAudioEngine.stop();
+        }
+        updateAmbientAudioUI();
+      });
+    }
+
+    const audioVolumeSlider = document.getElementById('slider-audio-volume');
+    const volumeBadge = document.getElementById('slider-volume-badge');
+    if (audioVolumeSlider) {
+      audioVolumeSlider.value = audioVolume;
+      if (volumeBadge) volumeBadge.textContent = `${audioVolume}%`;
+      audioVolumeSlider.addEventListener('input', (e) => {
+        audioVolume = parseInt(e.target.value, 10);
+        localStorage.setItem('noisebudget_audio_volume', audioVolume.toString());
+        if (volumeBadge) volumeBadge.textContent = `${audioVolume}%`;
+        calmAudioEngine.setVolume(audioVolume / 100);
+      });
+    }
+
+    // Intervention Card Toggle Audio Button
+    const btnInterventionToggleAudio = document.getElementById('btn-intervention-toggle-audio');
+    if (btnInterventionToggleAudio) {
+      btnInterventionToggleAudio.addEventListener('click', () => {
+        if (calmAudioEngine.isPlaying) {
+          calmAudioEngine.stop();
+        } else {
+          calmAudioEngine.play(currentSoundProfile, audioVolume / 100);
+        }
+      });
+    }
+
+    // Settings Test Audio Button
+    const btnTestAudio = document.getElementById('btn-test-audio');
+    if (btnTestAudio) {
+      btnTestAudio.addEventListener('click', () => {
+        if (calmAudioEngine.isPlaying) {
+          calmAudioEngine.stop();
+        } else {
+          calmAudioEngine.play(currentSoundProfile, audioVolume / 100);
+        }
+      });
+    }
+
+    // Sound chips in intervention card
+    document.querySelectorAll('.btn-sound-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sound = btn.getAttribute('data-sound');
+        setSoundProfile(sound);
+      });
     });
 
+    // Sound buttons in settings view
+    document.querySelectorAll('.settings-sound-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sound = btn.getAttribute('data-sound');
+        setSoundProfile(sound);
+      });
+    });
+
+    // Header chip click jumps to settings or toggles
+    const headerAudioChip = document.getElementById('header-audio-chip');
+    if (headerAudioChip) {
+      headerAudioChip.addEventListener('click', () => {
+        switchTab('settings');
+      });
+    }
+
+    // Refresh DND permission status whenever returning to the application
+    window.addEventListener('focus', () => {
+      updateDndUI();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        updateDndUI();
+      }
+    });
+
+    // Initialize UI
+    setHapticIntensity(hapticIntensity);
+    updateDndUI();
+    updateAmbientAudioUI();
     renderWeeklyRows();
 
     // Initial state
